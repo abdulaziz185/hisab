@@ -24,7 +24,9 @@ function parse(text,db){
   if(m)return{type:'pay',customer:fixCust(m[1],db),amount:parseFloat(m[2])};
   const low=key(t);
   if(/^(undo|delete last|last delete|galat)$/.test(low))return{type:'undo'};
+  if(/^(hi+|hello+|hey+|salam|salaam|assalam[ -]?o[ -]?alaikum|aoa|thanks?|thank you|shukriya)$/.test(low))return{type:'chat',reply:'Hi! Type what you sold, e.g. OG glass Shahgee'};
   if(!/\d/.test(low)&&/\?$|\b(kitna|kitne|balance|owes?|baqaya|baaqi|pending|today|aaj|hafta|week|month|mahina|total|profit|munafa|sales?|udhaar|udhar)\b/.test(low))return{type:'chat',reply:answer(low.replace(/\?/g,''),db)};
+  if(!/\d/.test(low)&&/^(is|are|what|how|who|why|can|do|does|kya|kaise|kab|kon)\b/.test(low))return{type:'chat',reply:"I'm in offline mode, so I only understand sales and balances. Turn on AI in the Backup tab for general chat."};
   const paidExplicit=/\b(paid|cash|received|naqad)\b/i.test(t);
   t=t.replace(/\b(paid|cash|received|naqad)\b/ig,'').replace(/\s+/g,' ').trim();
   let price=null;m=t.match(/\b(?:for|rs\.?|rate|price)\s*(\d+(?:\.\d+)?)|@\s*(\d+(?:\.\d+)?)|(\d+(?:\.\d+)?)\s*(?:rs\.?|rupees?|mein|me)\b/i);
@@ -75,13 +77,19 @@ function say(t,who='a',chips){const d=document.createElement('div');d.className=
 
 const AIC=()=>{try{return JSON.parse(localStorage.getItem('hisab_ai'))||{}}catch(e){return{}}};
 function finishSale(d,n){const s=addSale(DB,d,n,Date.now());save();say('✅ Saved: '+saleLine(s)+'\n'+(s.cost==null?'Profit: unknown':'Profit: '+money(s.price-s.cost)),'a',s.cost==null?[['Add cost',()=>askCost(s)]]:null)}
+async function callAI(c,p){
+  const groq=/^gsk_/.test(c.key),models=[...new Set([c.model,...(groq?['llama-3.3-70b-versatile','llama-3.1-8b-instant']:['gemini-3.1-flash-lite','gemini-3.8-flash','gemini-4-hydrogen'])].filter(Boolean))];let r;
+  for(const mo of models){
+    r=groq?await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+c.key},body:JSON.stringify({model:mo,messages:[{role:'user',content:p}],response_format:{type:'json_object'},temperature:0})})
+      :await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+mo+':generateContent?key='+encodeURIComponent(c.key),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:p}]}],generationConfig:{responseMimeType:'application/json'}})});
+    if(r.ok){if(mo!==c.model)localStorage.setItem('hisab_ai',JSON.stringify({key:c.key,model:mo}));const j=await r.json();return groq?j.choices[0].message.content:j.candidates[0].content.parts[0].text}
+    if(r.status!==404&&r.status!==400)break}
+  let m='';try{m=((await r.json()).error||{}).message||''}catch(e){}throw new Error(r.status+' '+(groq?'Groq':'Gemini')+' '+String(m).slice(0,110))}
 async function smart(text){const c=AIC();if(!c.key)return parse(text,DB);
   const th=document.createElement('div');th.className='b a';th.textContent='…';$('#msgs').append(th);$('main').scrollTop=1e9;
   try{const data={products:knownProducts(DB).slice(0,50),customers:[...knownCustomers(DB)].slice(0,80),pendingBalances:balances(DB),today:stats(DB,sod()),week:stats(DB,since.week()),month:stats(DB,since.month()),allTime:stats(DB,0)};
     const p='You are the sales assistant of a small shop. The owner types in English, Urdu or Roman Urdu, with typos. Reply with ONLY one JSON object: {"type":"sale"|"pay"|"chat","items":[{"name":"","qty":1}],"customer":"","paid":true,"price":null,"amount":0,"reply":""}. Rules: "sale" = something sold. A customer name means paid=false (udhaar) unless text says paid/cash/received/naqad; no customer means paid=true. A bare number after a product is the QUANTITY. Set price only if explicitly stated as a selling price (Rs, rate, for, @); NEVER guess, otherwise null. "pay" = customer paid back money (customer, amount). "chat" = a question or anything else: answer briefly in "reply" using DATA only; if unclear ask ONE short question. Reuse exact spelling of known products/customers when they match despite typos.\nDATA: '+JSON.stringify(data)+'\nOWNER SAID: '+text;
-    const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+(c.model||'gemini-2.5-flash')+':generateContent?key='+encodeURIComponent(c.key),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:p}]}],generationConfig:{responseMimeType:'application/json'}})});
-    if(!r.ok)throw new Error(r.status);
-    const j=JSON.parse(((await r.json()).candidates[0].content.parts[0].text.match(/\{[\s\S]*\}/)||[''])[0]);th.remove();
+    const j=JSON.parse(((await callAI(c,p)).match(/\{[\s\S]*\}/)||[''])[0]);th.remove();
     if(j.type==='pay'&&j.customer&&+j.amount>0)return{type:'pay',customer:fixCust(String(j.customer),DB),amount:+j.amount};
     if(j.type==='sale'&&Array.isArray(j.items)){const items=j.items.filter(i=>i&&i.name).map(i=>({name:String(i.name).trim(),qty:Math.max(1,+i.qty||1)}));
       if(items.length){const cu=j.customer?fixCust(String(j.customer),DB):'';return{type:'sale',items,customer:cu,paid:cu?j.paid===true:true,price:+j.price>0?+j.price:null}}}
@@ -145,8 +153,8 @@ function renderData(){$('#data').innerHTML=`<div class="c"><b>Your data lives on
   <div class="c grid"><button id="bj">⬇ Backup (JSON)</button><button id="bc" class="s">⬇ Export CSV</button></div>
   <div class="c"><label>Restore from a JSON backup (replaces current data)</label><input id="rf" type="file" accept=".json,application/json" style="margin-top:8px"></div>
   <div class="c"><b>How to back up</b><p class="sub" style="margin-top:6px">1. Tap “Backup (JSON)” at the end of each day.<br>2. File saves to Downloads. Send it to yourself on WhatsApp/Google Drive.<br>3. To restore on a new phone: open the app, Backup tab, choose the file.</p></div>
-  <div class="c"><b>✨ Optional: real AI (free)</b><p class="sub" style="margin:6px 0">Works great without it. For ChatGPT-style AI, get a free Gemini key at aistudio.google.com/apikey and paste it here. Stored only on this phone.</p><input id="ak" type="password" placeholder="Gemini API key"><input id="am" placeholder="Model (default gemini-2.5-flash)" style="margin-top:8px"><button id="as" style="margin-top:8px">Save AI settings</button></div>`;
-  {const c=AIC();$('#ak').value=c.key||'';$('#am').value=c.model||'';$('#as').onclick=()=>{localStorage.setItem('hisab_ai',JSON.stringify({key:$('#ak').value.trim(),model:$('#am').value.trim()}));say($('#ak').value.trim()?'✨ AI mode on.':'AI off. Using smart offline mode.')}}
+  <div class="c"><b>✨ Optional: real AI (free) · v3</b><p class="sub" style="margin:6px 0">For ChatGPT-style AI, paste a free key: Groq (console.groq.com/keys, recommended, fast) or Gemini (aistudio.google.com/apikey). Stored only on this phone.</p><input id="ak" type="password" placeholder="API key (Groq gsk_… or Gemini AIza…)"><input id="am" placeholder="Model (leave empty)" style="margin-top:8px"><button id="as" style="margin-top:8px">Save AI settings</button></div>`;
+  {const c=AIC();$('#ak').value=c.key||'';$('#am').value=c.model||'';$('#as').onclick=()=>{localStorage.setItem('hisab_ai',JSON.stringify({key:$('#ak').value.trim(),model:$('#ak').value.trim()===c.key?$('#am').value.trim():''}));say($('#ak').value.trim()?'✨ AI mode on.':'AI off. Using smart offline mode.')}}
   const d=new Date().toISOString().slice(0,10);
   $('#bj').onclick=()=>dl('hisab-backup-'+d+'.json',JSON.stringify(DB),'application/json');
   $('#bc').onclick=()=>dl('hisab-sales-'+d+'.csv',csv(DB),'text/csv');
