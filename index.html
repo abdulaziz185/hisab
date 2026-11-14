@@ -1,0 +1,45 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0712"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon-192.png">
+<title>Hisab AI</title>
+<style>
+:root{--bg:#0b0712;--card:#17101f;--card2:#21182e;--p:#ab9ff2;--p2:#7c5cff;--t:#f4f0ff;--m:#8d84a6;--g:#4ade80;--r:#f87171}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--t);font:16px system-ui,sans-serif}
+#app{height:100%;display:flex;flex-direction:column;max-width:600px;margin:auto;padding-top:env(safe-area-inset-top)}
+header{padding:14px 18px;font-weight:700;font-size:20px;letter-spacing:.3px}header span{color:var(--p)}
+main{flex:1;overflow-y:auto;padding:0 14px 12px}
+.v{display:none}.v.on{display:block;animation:f .25s}@keyframes f{from{opacity:0;transform:translateY(8px)}}
+#chat.on{display:flex;flex-direction:column;min-height:100%}
+.b{max-width:85%;padding:10px 14px;border-radius:18px;margin:6px 0;line-height:1.35;white-space:pre-wrap;animation:f .2s}
+.b.u{align-self:flex-end;background:linear-gradient(135deg,var(--p2),#5b3fd6);border-bottom-right-radius:5px}
+.b.a{align-self:flex-start;background:var(--card2);border-bottom-left-radius:5px}
+.chip{display:inline-block;margin:6px 6px 0 0;padding:7px 13px;border-radius:20px;background:var(--card);border:1px solid var(--p2);color:var(--p);font-size:14px}
+.row{display:flex;gap:8px;padding:8px 12px calc(8px + env(safe-area-inset-bottom));background:var(--bg)}
+input,select{background:var(--card);border:1px solid #2c2140;color:var(--t);border-radius:22px;padding:13px 16px;font-size:16px;width:100%;outline:0}
+input:focus{border-color:var(--p2)}
+button{border:0;background:var(--p2);color:#fff;border-radius:22px;padding:12px 18px;font-size:15px;font-weight:600}
+button.s{background:var(--card2);color:var(--p)}button.d{background:#4a1d24;color:var(--r)}
+nav{display:flex;background:var(--card);border-top:1px solid #2c2140;padding-bottom:env(safe-area-inset-bottom)}
+nav a{flex:1;text-align:center;padding:11px 0;font-size:12px;color:var(--m)}nav a.on{color:var(--p)}nav a i{display:block;font-style:normal;font-size:19px}
+.c{background:var(--card);border-radius:18px;padding:14px;margin:8px 0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.k{color:var(--m);font-size:13px}.n{font-size:22px;font-weight:700;margin-top:2px}.big{background:linear-gradient(135deg,#3b2a7a,#1d1236)}
+.li{display:flex;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid #261b36}
+.pend{color:var(--r)}.ok{color:var(--g)}.sub{color:var(--m);font-size:13px}
+.tabs{display:flex;gap:6px;margin:10px 0;overflow-x:auto}.tabs button{padding:8px 14px;font-size:13px;background:var(--card);color:var(--m)}.tabs button.on{background:var(--p2);color:#fff}
+#modal{position:fixed;inset:0;background:#000a;display:none;align-items:flex-end;z-index:9}#modal.on{display:flex}
+#modal>div{background:var(--card);width:100%;max-width:600px;margin:auto;border-radius:24px 24px 0 0;padding:18px;display:grid;gap:10px}
+label{font-size:13px;color:var(--m)}
+</style></head><body><div id="app">
+<header>Hisab <span>AI</span></header>
+<main>
+<section id="chat" class="v on"><div id="msgs"></div></section>
+<section id="home" class="v"></section>
+<section id="sales" class="v"><input id="q" placeholder="Search sales…"><div class="tabs" id="ft"></div><div id="sl"></div></section>
+<section id="cust" class="v"></section>
+<section id="data" class="v"></section>
+</main>
+<form class="row" id="f"><input id="in" autocomplete="off" placeholder="e.g. OG glass Shahgee"><button>Send</button></form>
+<nav><a data-v="chat" class="on"><i>💬</i>Chat</a><a data-v="home"><i>📊</i>Home</a><a data-v="sales"><i>🧾</i>Sales</a><a data-v="cust"><i>👤</i>Udhaar</a><a data-v="data"><i>💾</i>Backup</a></nav>
+</div><div id="modal"></div>
+<script src="app.js"></script></body></html>
