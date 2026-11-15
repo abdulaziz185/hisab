@@ -73,6 +73,7 @@ nav{height:calc(66px + env(safe-area-inset-bottom,0px));padding:6px 4px calc(6px
 .seg{display:flex;background:var(--card);border-radius:999px;padding:4px}.seg button{flex:1;background:none;min-height:44px}
 .row3{display:flex;gap:10px}.step{display:flex;align-items:center;background:var(--card);border-radius:999px;flex:none}.step button{width:52px;height:52px;padding:0;font-size:24px;background:none}.step b{min-width:28px;text-align:center;font-size:20px}.sum{min-height:24px;text-align:center}
 #lock{position:fixed;inset:0;z-index:99;background:var(--bg);display:flex;align-items:center;justify-content:center}#lock .sh2{width:min(320px,86%);display:flex;flex-direction:column;gap:12px;text-align:center}.seg button{font-size:14px;padding:0 4px}
+#sheet .sh>*{flex-shrink:0}.cc{max-height:176px;scrollbar-width:none}.cc::-webkit-scrollbar{display:none}#sheet .sh>.lg.p{position:sticky;bottom:0;box-shadow:0 -10px 16px var(--bg)}.row3{align-items:flex-end}.row3>div:not(.step){flex:1;min-width:0}
 </style></head><body>
 <main id="v"></main>
 <div id="bar"><div class="in"><div class="row" id="qa"></div><div class="chips" id="chips"></div><div class="row"><input id="msg" placeholder="Sale, payment, or ask a question" autocomplete="off"><button class="p" id="go">Add</button></div></div></div>
@@ -305,9 +306,9 @@ function drawSheet(){const pay=qs.m==="pay";RC=pay?recentC().filter(c=>bal(c)>0)
  `<div class="lbl">Amount received</div><input id="qn" type="number" inputmode="decimal" placeholder="Amount" value="${qs.n}" oninput="qs.n=this.value;upd()">${qs.c&&bal(qs.c)>0?`<button onclick="qs.n=Math.round(bal('${esc(qs.c)}'));drawSheet()">Full amount ${fmt(bal(qs.c))}</button>`:""}`:
  `<div class="lbl">Item</div><div class="cc">${RP.map((p,i)=>`<button class="${qs.p.toLowerCase()===p.toLowerCase()?"on":""}" onclick="pickP(RP[${i}])">${esc(p)}</button>`).join("")}</div>
  <input id="qp" placeholder="Or type an item" value="${RP.some(x=>x.toLowerCase()===qs.p.toLowerCase())?"":esc(qs.p)}" oninput="qs.p=this.value;upd()">
- <div class="row3"><div class="step"><button onclick="qs.q=Math.max(1,qs.q-1);drawSheet()">−</button><b>${qs.q}</b><button onclick="qs.q++;drawSheet()">+</button></div><input id="qn" type="number" inputmode="decimal" placeholder="Price each" value="${qs.n}" oninput="qs.n=this.value;upd()"></div>
+ <div class="row3"><div class="step"><button onclick="qs.q=Math.max(1,qs.q-1);drawSheet()">−</button><b>${qs.q}</b><button onclick="qs.q++;drawSheet()">+</button></div><div><div class="lbl">Price each</div><input id="qn" type="number" inputmode="decimal" placeholder="Price" value="${qs.n}" oninput="qs.n=this.value;upd()"></div></div>
  ${last?`<div class="mute">Last price ${fmt(last.u)} each</div>`:""}
- <div class="row3"><input type="number" inputmode="numeric" placeholder="Discount" value="${qs.disc}" oninput="qs.disc=this.value;upd()"><input type="number" inputmode="decimal" placeholder="Your cost each" value="${qs.cost}" oninput="qs.cost=this.value"></div>
+ <div class="row3"><div><div class="lbl">Discount</div><input type="number" inputmode="numeric" placeholder="0" value="${qs.disc}" oninput="qs.disc=this.value;upd()"></div><div><div class="lbl">Your cost each</div><input type="number" inputmode="decimal" placeholder="Optional" value="${qs.cost}" oninput="qs.cost=this.value"></div></div>
  <div class="seg"><button class="${qs.st==="u"?"on":""}" onclick="qs.st='u';drawSheet()">Udhaar</button><button class="${qs.st==="u"?"":"on"}" onclick="qs.st='p';drawSheet()">Paid</button></div>${qs.st==="u"?`<div class="lbl">Promised to pay by (optional)</div><input type="date" value="${qs.due}" onchange="qs.due=this.value">`:""}`)+
  `<div class="sum" id="sum"></div><button class="p lg" onclick="sheetSave()">${pay?"Save payment":"Save sale"}</button></div>`;upd()}
 function sheetSave(){let c=qs.c.trim();if(c)c=match(c);const n=+qs.n;
