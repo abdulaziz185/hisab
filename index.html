@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Hisab AI V5</title><meta name="theme-color" content="#121214"><meta name="description" content="Halal-minded sales and udhaar hisab"><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
+<title>Hisab AI V6</title><meta name="theme-color" content="#121214"><meta name="description" content="Halal-minded sales and udhaar hisab"><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
 <style>
 :root{--bg:#121214;--card:#1a1030;--card2:#261549;--ink:#f3ecff;--mute:#9d8fbd;--acc:#9b6bff;--gold:#e8c26b;--ok:#4fd1a1;--bad:#ff7a90;--line:#33214f;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -60,15 +60,50 @@ button{border-radius:999px;border-color:transparent}button.p{background:var(--ac
 input,textarea{border-radius:999px;background:var(--card);border-color:transparent}textarea{border-radius:16px}
 nav{background:var(--bg)}nav button.on{color:var(--acc)}nav button svg{display:block;margin:0 auto 2px}
 .chips button.on{color:var(--onacc)}
+body{font-size:17px}.card{border-radius:24px}
+button{min-height:46px;transition:transform .08s}button:active{transform:scale(.96)}
+.lg{min-height:56px;font-size:17px;font-weight:700;border-radius:18px}.sq{flex:none;width:56px;padding:0;display:flex;align-items:center;justify-content:center}
+#bar{bottom:calc(66px + env(safe-area-inset-bottom,0px));padding:10px 12px;border-radius:24px 24px 0 0;box-shadow:0 -8px 24px rgba(0,0,0,.25);border-top:none}#bar .in>*+*{margin-top:8px}
+nav{height:calc(66px + env(safe-area-inset-bottom,0px));padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px))}nav button{min-height:0;height:100%;font-size:12px}
+.toast{top:calc(env(safe-area-inset-top,0px) + 14px);bottom:auto;z-index:50}
+#sheet{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:30;display:flex;align-items:flex-end}
+#sheet .sh{width:100%;max-width:560px;margin:0 auto;background:var(--bg);border-radius:28px 28px 0 0;padding:10px 14px calc(16px + env(safe-area-inset-bottom,0px));max-height:92%;overflow:auto;display:flex;flex-direction:column;gap:10px}
+.grab{width:44px;height:5px;border-radius:9px;background:var(--line);margin:0 auto}.lbl{font-size:13px;color:var(--mute);margin-bottom:-4px}
+.cc{display:flex;flex-wrap:wrap;gap:8px;max-height:128px;overflow:auto}.cc button{white-space:nowrap;padding:10px 16px;background:var(--card)}.cc button.on,.seg button.on{background:var(--acc);color:var(--onacc);font-weight:700}
+.seg{display:flex;background:var(--card);border-radius:999px;padding:4px}.seg button{flex:1;background:none;min-height:44px}
+.row3{display:flex;gap:10px}.step{display:flex;align-items:center;background:var(--card);border-radius:999px;flex:none}.step button{width:52px;height:52px;padding:0;font-size:24px;background:none}.step b{min-width:28px;text-align:center;font-size:20px}.sum{min-height:24px;text-align:center}
 </style></head><body>
 <main id="v"></main>
-<div id="bar"><div class="in"><div class="chips" id="chips"></div><div class="row"><input id="msg" placeholder="Sale, payment, or ask a question" autocomplete="off"><button class="p" id="go">Add</button></div></div></div>
+<div id="bar"><div class="in"><div class="row" id="qa"></div><div class="chips" id="chips"></div><div class="row"><input id="msg" placeholder="Sale, payment, or ask a question" autocomplete="off"><button class="p" id="go">Add</button></div></div></div>
 <nav id="nav"></nav>
 <script>
 const $=s=>document.querySelector(s);
-let db={sales:[],pays:[],costs:{},stock:{},margin:20,lastBackup:0};
-try{const r=localStorage.getItem("hisab3");if(r)Object.assign(db,JSON.parse(r))}catch(e){}
-const save=()=>{try{localStorage.setItem("hisab3",JSON.stringify(db))}catch(e){}};
+const KEY="hisab3",DEF=()=>({sales:[],pays:[],costs:{},stock:{},margin:20,lastBackup:0,rev:0});
+let db=DEF(),lastId=0,pers=0,lastErr=0,wt=0;
+const uid=()=>{let i=Date.now();if(i<=lastId)i=lastId+1;return lastId=i};
+const nn=(x,d)=>Number.isFinite(+x)&&x!==null&&x!==""?+x:d;
+function clean(o){const d=DEF();if(!o||typeof o!=="object")return d;if(o.data&&o.app)o=o.data;const seen=new Set(),fix=e=>{let i=+e.id;if(!i||seen.has(i))i=uid();seen.add(i);lastId=Math.max(lastId,i);return i};
+ d.sales=(Array.isArray(o.sales)?o.sales:[]).filter(x=>x&&typeof x.p==="string"&&Number.isFinite(+x.a)).map(x=>({...x,id:fix(x),t:nn(x.t,Date.now()),c:String(x.c||""),q:nn(x.q,1),a:+x.a}));
+ d.pays=(Array.isArray(o.pays)?o.pays:[]).filter(x=>x&&Number.isFinite(+x.a)).map(x=>({...x,id:fix(x),t:nn(x.t,Date.now()),c:String(x.c||""),a:+x.a}));
+ if(o.costs&&typeof o.costs==="object")for(const k in o.costs)if(Number.isFinite(+o.costs[k]))d.costs[k]=+o.costs[k];
+ if(o.stock&&typeof o.stock==="object")for(const k in o.stock){const v=o.stock[k]||{};d.stock[k]={...v,q:nn(v.q,0)}}
+ d.margin=nn(o.margin,20)||20;d.lastBackup=nn(o.lastBackup,0);d.rev=nn(o.rev,0);d.saved=nn(o.saved,0);if(typeof o.vl==="string")d.vl=o.vl;return d}
+const idb=()=>new Promise((res,rej)=>{try{const r=indexedDB.open("hisab",1);r.onupgradeneeded=()=>{r.result.createObjectStore("kv");r.result.createObjectStore("snaps")};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}});
+const idbDo=(st,mode,fn)=>idb().then(d=>new Promise((res,rej)=>{const t=d.transaction(st,mode);let out;try{out=fn(t.objectStore(st))}catch(e){return rej(e)}t.oncomplete=()=>{d.close();res(out&&out.result!==undefined?out.result:out)};t.onerror=t.onabort=()=>rej(t.error)}));
+function prune(){return idbDo("snaps","readwrite",s=>{const r=s.getAllKeys();r.onsuccess=()=>{const k=r.result.map(String),dd=k.filter(x=>/^\d{4}-/.test(x)).sort(),pp=k.filter(x=>x[0]==="p").sort();dd.slice(0,-14).concat(pp.slice(0,-3)).forEach(x=>s.delete(x))};return r})}
+function flush(){clearTimeout(wt);const s=JSON.stringify(db),day=new Date().toLocaleDateString("en-CA");idbDo("kv","readwrite",k=>k.put(s,"db")).catch(()=>{});idbDo("snaps","readwrite",k=>k.put(s,day)).then(prune).catch(()=>{})}
+const mirror=()=>{clearTimeout(wt);wt=setTimeout(flush,400)};
+function save(){db.rev=(db.rev||0)+1;db.saved=Date.now();try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){if(Date.now()-lastErr>8e3){lastErr=Date.now();toast("Couldn’t save on this phone. Save a backup file now.",4000)}}mirror();if(!pers&&navigator.storage&&navigator.storage.persist){pers=1;navigator.storage.persist().catch(()=>{})}}
+function pull(){try{const r=localStorage.getItem(KEY);if(!r)return;const o=JSON.parse(r);if((o.rev||0)>(db.rev||0)){db=clean(o);render()}}catch(e){}}
+function boot(){let raw=null;try{raw=localStorage.getItem(KEY)}catch(e){}
+ if(raw){try{db=clean(JSON.parse(raw))}catch(e){try{localStorage.setItem(KEY+"-corrupt-"+Date.now(),raw)}catch(_){}}}
+ idbDo("kv","readonly",s=>s.get("db")).then(v=>{const o=v?clean(JSON.parse(v)):null;if(o&&((o.rev||0)>(db.rev||0)||(!db.sales.length&&!db.pays.length&&(o.sales.length||o.pays.length)))){db=o;try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){}render();toast("Recovered your hisab from the safe copy",3000)}else mirror()}).catch(()=>{})}
+addEventListener("storage",e=>{if(e.key===KEY)pull()});document.addEventListener("visibilitychange",()=>{document.hidden?flush():pull()});addEventListener("pagehide",flush);
+function snapUI(){const el=$("#snaps");if(!el)return;const st=navigator.storage&&navigator.storage.persisted?navigator.storage.persisted():Promise.resolve(null);
+ Promise.all([idbDo("snaps","readonly",s=>{const o={},c=s.openCursor();c.onsuccess=()=>{const x=c.result;if(x){o[x.key]=x.value;x.continue()}};return o}),st]).then(([o,p])=>{const ks=Object.keys(o).sort().reverse();
+  el.innerHTML=`<div class="mute">${p?"Protected storage is on.":p===false?"The browser may clear data if the phone runs low on space, so still keep a backup file.":""}</div>`+(ks.length?ks.map(k=>{let n;try{n=JSON.parse(o[k])}catch(e){return""}return`<div class="it"><div class="gr"><b>${k[0]==="p"?"Before restore, "+new Date(+k.slice(12)).toLocaleString():k}</b><div class="mute">${(n.sales||[]).length} sales, ${(n.pays||[]).length} payments</div></div><button onclick="useSnap('${k}')">Restore</button></div>`}).join(""):`<div class="mute">No automatic copies yet. One appears after your next entry.</div>`)}).catch(()=>{el.innerHTML=`<div class="mute">Automatic copies aren’t available in this browser. Use Save as file.</div>`})}
+function useSnap(k){idbDo("snaps","readonly",s=>s.get(k)).then(v=>{if(v){$("#rs").value=v;rst()}}).catch(()=>toast("Couldn’t open that copy"))}
+boot();
 const fmt=n=>"Rs "+Math.round(n).toLocaleString("en-IN");
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const Q=[
@@ -147,13 +182,13 @@ function parse(raw){
  return{type:"sale",c:cust,p:prod||"Item",q,n,each:!tot&&nums.length>1,cost,st:(!cust||payW)?"p":"u",disc:disc||0};
 }
 const pendTotal=p=>(p.each?p.q*p.n:p.n)-(p.disc||0);
-function toast(m){const e=document.createElement("div");e.className="toast";e.textContent=m;document.body.appendChild(e);setTimeout(()=>e.remove(),1800)}
+function toast(m,ms){const e=document.createElement("div");e.className="toast";e.textContent=m;document.body.appendChild(e);setTimeout(()=>e.remove(),ms||1800)}
 function copy(t,ok){const done=()=>toast(ok||"Copied");try{navigator.clipboard.writeText(t).then(done,fb)}catch(e){fb()}function fb(){const a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();try{document.execCommand("copy")}catch(e){}a.remove();done()}}
 function addMsg(){const v=$("#msg").value;if(/^\s*stock\b/i.test(v))return addStock(v);if(/\?|^\s*(how|what|which|who|when|show|kitna|kitne|kon|konsa)\b/i.test(v)){ask(v);$("#msg").value="";return render()}const r=parse(v);if(!r)return;if(r.err){toast(r.err);return}
- if(r.type==="pay"){db.pays.push({id:Date.now(),t:Date.now(),c:r.c,a:r.a});save();$("#msg").value="";pend=null;toast("Payment saved");return render()}
+ if(r.type==="pay"){db.pays.push({id:uid(),t:Date.now(),c:r.c,a:r.a});save();$("#msg").value="";pend=null;toast("Payment saved");return render()}
  pend=r;$("#msg").value="";render()}
-function savePend(){const p=pend,a=pendTotal(p);db.sales.push({id:Date.now(),t:Date.now(),c:p.c,p:p.p,q:p.q,a,cost:p.cost,st:p.st});const sk=db.stock[p.p.toLowerCase()];if(sk)sk.q=Math.max(0,sk.q-p.q);if(p.cost!=null)db.costs[p.p.toLowerCase()]=p.cost;pend=null;save();toast("Saved. Alhamdulillah");render()}
-function del(id){const sx=db.sales.find(x=>x.id===id),kx=sx&&db.stock[sx.p.toLowerCase()];if(kx)kx.q+=sx.q;db.sales=db.sales.filter(s=>s.id!==id);db.pays=db.pays.filter(s=>s.id!==id);save();render()}
+function savePend(){const p=pend,a=pendTotal(p);db.sales.push({id:uid(),t:Date.now(),c:p.c,p:p.p,q:p.q,a,cost:p.cost,st:p.st});const sk=db.stock[p.p.toLowerCase()];if(sk)sk.q=Math.max(0,sk.q-p.q);if(p.cost!=null)db.costs[p.p.toLowerCase()]=p.cost;pend=null;save();toast("Saved. Alhamdulillah");render()}
+function del(id){if(!confirm("Delete this entry?"))return;const sx=db.sales.find(x=>x.id===id),kx=sx&&db.stock[sx.p.toLowerCase()];if(kx)kx.q+=sx.q;db.sales=db.sales.filter(s=>s.id!==id);db.pays=db.pays.filter(s=>s.id!==id);save();render()}
 const today=()=>{const d=new Date();d.setHours(0,0,0,0);return+d};
 function entryHTML(e){const d=new Date(e.t).toLocaleDateString([],{day:"numeric",month:"short"}),pay=e.p===undefined,nm=pay?e.c:(e.c||"Cash sale"),sub=pay?"Payment received":e.p==="Discount"?"Discount":e.q<0?"Return, "+(-e.q)+" × "+e.p:e.q+" × "+e.p,amt=pay?"+"+fmt(e.a):fmt(e.a),st=pay?"Received":e.st==="u"?"Udhaar":"Paid",cl=pay||e.a<0?"pos":e.st==="u"?"neg":"";
  return`<div class="it"><div class="av ${pay||e.a<0?"g":e.st==="u"?"r":""}">${esc(nm[0].toUpperCase())}</div><div class="gr"><b>${esc(nm)}</b><div class="mute">${esc(sub)}, ${d}</div></div><div class="rt"><b class="${cl}">${amt}</b><div class="mute">${st}</div></div><button class="x" onclick="del(${e.id})">✕</button></div>`}
@@ -178,7 +213,7 @@ function vLedger(){const cs=names().map(c=>[c,bal(c)]).filter(x=>x[1]!==0).sort(
    h+=l.map(entryHTML).join("")+`<div class="row"><input id="pa" type="number" inputmode="numeric" placeholder="Amount received"><button class="p" onclick="recv('${esc(c)}')">Save</button></div>
    <button style="margin-top:8px" onclick="copy('Assalamu alaikum ${esc(c)}, a gentle reminder that ${fmt(b)} is pending with us. Take your time, JazakAllah khair.','Reminder copied')">Copy gentle reminder</button> <button onclick="prof='${esc(c)}';go('profile')">Profile</button>`}
   h+=`</div>`});return h+"<h2>All customers</h2>"+(names().sort().map(c=>{const L=db.sales.filter(s=>sameC(s.c,c));return`<div class="it" onclick="prof='${esc(c)}';go('profile')"><div class="av">${esc(c[0])}</div><div class="gr"><b>${esc(c)}</b><div class="mute">${L.length} entries</div></div><div class="rt"><b>${fmt(L.reduce((a,x)=>a+x.a,0))}</b><div class="mute">total bought</div></div></div>`}).join("")||"<div class='card mute'>No customers yet.</div>")}
-function recv(c){const a=+$("#pa").value;if(!a)return toast("Enter an amount");db.pays.push({id:Date.now(),t:Date.now(),c,a});save();toast("Payment saved");render()}
+function recv(c){const a=+$("#pa").value;if(!a)return toast("Enter an amount");db.pays.push({id:uid(),t:Date.now(),c,a});save();toast("Payment saved");render()}
 function vSearch(){return`<h1>Find a past sale</h1><div class="mute">Search a product or customer from all your old hisab.</div><input id="sq" placeholder="Type a product name" style="margin:10px 0" oninput="doSearch()"><div id="res"></div>`}
 function doSearch(){const q=$("#sq").value.trim().toLowerCase(),r=$("#res");if(!q){r.innerHTML="";return}
  const m=db.sales.filter(s=>s.p.toLowerCase().includes(q)||s.c.toLowerCase().includes(q)).sort((a,b)=>b.t-a.t);
@@ -197,10 +232,10 @@ function vReports(){const n=new Date(),dim=new Date(n.getFullYear(),n.getMonth()
 function vBackup(){const d=db.lastBackup?Math.floor((Date.now()-db.lastBackup)/864e5)+" days ago":"never";
  return`<h1>Backup</h1><div class="card"><b>Last backup: ${d}</b><div class="mute">Your hisab lives on this phone. Copy a backup and keep it in WhatsApp saved messages or Notes.</div>
  <div class="row" style="flex-wrap:wrap;margin-top:10px"><button class="p" onclick="bk()">Copy backup</button>${navigator.share?`<button onclick="bk(1)">Share backup</button>`:""}<button onclick="csv()">Copy as CSV</button><button onclick="db.vl=db.vl==='ur-PK'?'en-IN':'ur-PK';save();render()">Voice: ${db.vl==='ur-PK'?'Urdu':'English'}</button><button onclick="dl()">Save as file</button>${ip?`<button onclick="ip.prompt()">Install app</button>`:""}</div></div>
- <h2>Restore</h2><div class="card"><textarea id="rs" placeholder="Paste your backup here"></textarea><button class="p" style="margin-top:8px" onclick="rst()">Restore from paste</button><input type="file" accept=".json" onchange="rfile(this)" style="margin-top:8px"><div class="mute">This replaces what is on this phone now.</div></div>`}
-function bk(s){const t=JSON.stringify(db);db.lastBackup=Date.now();save();if(s&&navigator.share)navigator.share({text:t}).catch(()=>{});else copy(t,"Backup copied");render()}
+ <h2>Automatic copies</h2><div class="card"><div class="mute">Saved on this phone: ${db.saved?new Date(db.saved).toLocaleString():"not yet"}. A copy is kept for each of the last 14 days.</div><div id="snaps"></div></div><h2>Restore</h2><div class="card"><textarea id="rs" placeholder="Paste your backup here"></textarea><button class="p" style="margin-top:8px" onclick="rst()">Restore from paste</button><input type="file" accept=".json" onchange="rfile(this)" style="margin-top:8px"><div class="mute">This replaces what is on this phone now.</div></div>`}
+function bk(s){db.lastBackup=Date.now();save();const t=JSON.stringify(db);if(s&&navigator.share)navigator.share({text:t}).catch(()=>{});else copy(t,"Backup copied");render()}
 function csv(){copy("Date,Customer,Product,Qty,Total,Status\n"+db.sales.map(s=>[new Date(s.t).toISOString().slice(0,10),s.c,s.p,s.q,s.a,s.st==="u"?"Udhaar":"Paid"].map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(",")).join("\n"),"CSV copied")}
-function rst(){try{const o=JSON.parse($("#rs").value);if(!o.sales)throw 0;db=Object.assign({sales:[],pays:[],costs:{},stock:{},margin:20,lastBackup:0},o);save();toast("Restored");render()}catch(e){toast("That isn’t a valid backup")}}
+function rst(){try{const o=JSON.parse($("#rs").value),n=clean(o),src=o.data&&o.app?o.data:o;if(!Array.isArray(src.sales))throw 0;if(!confirm("Replace this phone’s hisab with the backup ("+n.sales.length+" sales, "+n.pays.length+" payments)? A copy of the current one is kept first."))return;idbDo("snaps","readwrite",k=>k.put(JSON.stringify(db),"pre-restore-"+Date.now())).catch(()=>{});n.rev=db.rev;db=n;save();toast("Restored");render()}catch(e){toast("That isn’t a valid backup")}}
 const IC={home:"M3 11l9-8 9 8M5 9.5V20h14V9.5",book:"M4 7h16v12H4zM4 7l2-3h12l2 3M16 13h2",search:"M11 4a7 7 0 100 14 7 7 0 000-14zM21 21l-4.5-4.5",chart:"M4 20V10M10 20V4M16 20v-8M21 20H3",moon:"M20 14.5A8 8 0 119.5 4a6.5 6.5 0 0010.5 10.5z",mic:"M12 3a3 3 0 00-3 3v6a3 3 0 006 0V6a3 3 0 00-3-3zM5 11a7 7 0 0014 0M12 18v3",box:"M3 7l9-4 9 4v10l-9 4-9-4zM3 7l9 4 9-4M12 11v10",save:"M5 4h11l3 3v13H5zM8 4v5h7V4M8 20v-6h8v6"};
 const ic=n=>`<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${IC[n]}"/></svg>`;
 function addStock(v){let c=null;v=v.replace(/\b(?:cost|cp)\s*(\d+(?:\.\d+)?)/i,(m,a)=>{c=+a;return " "}).replace(/stock/i," ");const n=(v.match(/\d+(?:\.\d+)?/g)||[]).map(Number),p=v.replace(/\d+(?:\.\d+)?/g," ").replace(/\s+/g," ").trim().toLowerCase();if(!p||!n.length){toast("Try: stock OG glass 50 cost 300");return}const o=db.stock[p]||{q:0};o.q+=n[0];if(c!=null){o.cost=c;db.costs[p]=c}db.stock[p]=o;save();$("#msg").value="";toast("Stock updated");render()}
@@ -237,10 +272,36 @@ if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWor
 const T=[["chat","home","Home"],["ledger","book","Ledger"],["search","search","Find"],["reports","chart","Reports"],["hikmah","moon","Hikmah"]];
 function go(t){tab=t;render();scrollTo(0,0)}
 function render(){$("#nav").innerHTML=T.map(x=>`<button class="${tab===x[0]?"on":""}" onclick="go('${x[0]}')">${ic(x[1])}${x[2]}</button>`).join("");
- $("#bar").style.display=tab==="chat"?"block":"none";
+ $("#bar").style.display=tab==="chat"?"block":"none";document.body.style.paddingBottom=tab==="chat"?"290px":"110px";$("#qa").innerHTML=`<button class="p lg" style="flex:1" onclick="openSale('sale')">+ Sale</button><button class="lg" style="flex:1" onclick="openSale('pay')">Payment in</button><button class="lg sq" onclick="mic()">${ic("mic")}</button>`;
  $("#v").innerHTML=({chat:vChat,ledger:vLedger,search:vSearch,reports:vReports,backup:vBackup,hikmah:vHikmah,stock:vStock,profile:vProfile})[tab]();
  const pr=[...new Set(db.sales.slice().reverse().map(s=>s.p))].slice(0,6),cu=names().slice(0,5);
- $("#chips").innerHTML=[...cu,...pr].map(x=>`<button onclick="$('#msg').value+=($('#msg').value?' ':'')+this.textContent;$('#msg').focus()">${esc(x)}</button>`).join("")}
+ $("#chips").innerHTML=[...cu,...pr].map(x=>`<button onclick="$('#msg').value+=($('#msg').value?' ':'')+this.textContent;$('#msg').focus()">${esc(x)}</button>`).join("");if(tab==="backup")snapUI()}
 $("#go").onclick=addMsg;$("#msg").addEventListener("keydown",e=>{if(e.key==="Enter")addMsg()});
+let qs=null,RC=[],RP=[];
+const recentC=()=>{const m={};[...db.sales,...db.pays].forEach(e=>{if(e.c)m[e.c]=Math.max(m[e.c]||0,e.t)});return Object.keys(m).sort((a,b)=>m[b]-m[a])};
+const recentP=()=>[...new Set(db.sales.slice().reverse().filter(s=>s.q>0&&s.p!=="Discount").map(s=>s.p))].slice(0,8);
+function openSale(m){qs={m,c:"",p:"",q:1,n:"",st:"u",disc:""};drawSheet()}
+function closeSheet(){qs=null;const e=$("#sheet");if(e)e.remove()}
+function pickC(c){qs.c=c;if(qs.p&&qs.m!=="pay"){const l=lastU(c,qs.p);if(l)qs.n=Math.round(l.u)}drawSheet()}
+function pickP(p){qs.p=p;const l=lastU(qs.c,p);if(l)qs.n=Math.round(l.u);drawSheet()}
+function upd(){const e=$("#sum");if(!e)return;const c=qs.c.trim(),n=+qs.n||0;if(qs.m==="pay"){e.innerHTML=c&&n?`${esc(c)} will owe <b>${fmt(Math.max(0,bal(c)-n))}</b>`:"";return}
+ const t=qs.q*n-(+qs.disc||0);e.innerHTML=n?`Total <b>${fmt(t)}</b>${c&&qs.st==="u"?` · ${esc(c)} will owe <b>${fmt(bal(c)+t)}</b>`:""}`:""}
+function drawSheet(){const pay=qs.m==="pay";RC=pay?recentC().filter(c=>bal(c)>0):recentC().slice(0,8);RP=recentP();
+ let e=$("#sheet");if(!e){e=document.createElement("div");e.id="sheet";e.onclick=ev=>{if(ev.target===e)closeSheet()};document.body.appendChild(e)}
+ const known=RC.some(x=>sameC(x,qs.c)),last=qs.c&&qs.p&&lastU(qs.c,qs.p);
+ e.innerHTML=`<div class="sh"><div class="grab"></div><div class="seg"><button class="${pay?"":"on"}" onclick="qs.m='sale';drawSheet()">Sale</button><button class="${pay?"on":""}" onclick="qs.m='pay';drawSheet()">Payment in</button></div>
+ <div class="lbl">Customer</div><div class="cc">${pay?"":`<button class="${qs.c?"":"on"}" onclick="pickC('')">Cash sale</button>`}${RC.map((c,i)=>`<button class="${qs.c&&sameC(qs.c,c)?"on":""}" onclick="pickC(RC[${i}])">${esc(c)}${pay?" · "+fmt(bal(c)):""}</button>`).join("")}</div>
+ <input id="qc" placeholder="Or type a new name" value="${known?"":esc(qs.c)}" oninput="qs.c=this.value;upd()">`+(pay?
+ `<div class="lbl">Amount received</div><input id="qn" type="number" inputmode="decimal" placeholder="Amount" value="${qs.n}" oninput="qs.n=this.value;upd()">${qs.c&&bal(qs.c)>0?`<button onclick="qs.n=Math.round(bal('${esc(qs.c)}'));drawSheet()">Full amount ${fmt(bal(qs.c))}</button>`:""}`:
+ `<div class="lbl">Item</div><div class="cc">${RP.map((p,i)=>`<button class="${qs.p.toLowerCase()===p.toLowerCase()?"on":""}" onclick="pickP(RP[${i}])">${esc(p)}</button>`).join("")}</div>
+ <input id="qp" placeholder="Or type an item" value="${RP.some(x=>x.toLowerCase()===qs.p.toLowerCase())?"":esc(qs.p)}" oninput="qs.p=this.value;upd()">
+ <div class="row3"><div class="step"><button onclick="qs.q=Math.max(1,qs.q-1);drawSheet()">−</button><b>${qs.q}</b><button onclick="qs.q++;drawSheet()">+</button></div><input id="qn" type="number" inputmode="decimal" placeholder="Price each" value="${qs.n}" oninput="qs.n=this.value;upd()"></div>
+ ${last?`<div class="mute">Last price ${fmt(last.u)} each</div>`:""}
+ <input type="number" inputmode="numeric" placeholder="Discount (optional)" value="${qs.disc}" oninput="qs.disc=this.value;upd()">
+ <div class="seg"><button class="${qs.st==="u"?"on":""}" onclick="qs.st='u';drawSheet()">Udhaar</button><button class="${qs.st==="u"?"":"on"}" onclick="qs.st='p';drawSheet()">Paid</button></div>`)+
+ `<div class="sum" id="sum"></div><button class="p lg" onclick="sheetSave()">${pay?"Save payment":"Save sale"}</button></div>`;upd()}
+function sheetSave(){let c=qs.c.trim();if(c)c=match(c);const n=+qs.n;
+ if(qs.m==="pay"){if(!c||!n)return toast("Pick a customer and amount");db.pays.push({id:uid(),t:Date.now(),c,a:n});save();closeSheet();toast("Payment saved");return render()}
+ if(!qs.p.trim()||!n)return toast("Pick an item and price");pend={c,p:qs.p.trim(),q:qs.q,n,each:true,cost:null,st:c&&qs.st==="u"?"u":"p",disc:+qs.disc||0};closeSheet();savePend();if(navigator.vibrate)navigator.vibrate(20)}
 render();
 </script></body></html>
