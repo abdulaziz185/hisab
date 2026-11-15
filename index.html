@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Hisab AI V3</title><meta name="theme-color" content="#0d0716"><meta name="description" content="Halal-minded sales and udhaar hisab"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
+<title>Hisab AI V4</title><meta name="theme-color" content="#121214"><meta name="description" content="Halal-minded sales and udhaar hisab"><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
 <style>
-:root{--bg:#0d0716;--card:#1a1030;--card2:#261549;--ink:#f3ecff;--mute:#9d8fbd;--acc:#9b6bff;--gold:#e8c26b;--ok:#4fd1a1;--bad:#ff7a90;--line:#33214f;
+:root{--bg:#121214;--card:#1a1030;--card2:#261549;--ink:#f3ecff;--mute:#9d8fbd;--acc:#9b6bff;--gold:#e8c26b;--ok:#4fd1a1;--bad:#ff7a90;--line:#33214f;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f6f1ff;--card:#fff;--card2:#ece2ff;--ink:#22123f;--mute:#6f5f93;--acc:#6d3df0;--gold:#9a6b00;--ok:#0b8f64;--bad:#c42648;--line:#dccff6}}
 *{box-sizing:border-box;margin:0}
@@ -39,13 +39,34 @@ h1{color:var(--gold)}
 header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
 .q{font-size:18px;line-height:1.6;margin:6px 0}
 .chips button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+
+:root{--bg:#121214;--card:#1c1c21;--card2:#27272e;--ink:#f4f4f6;--mute:#8d8d99;--acc:#ab9ff2;--onacc:#15121f;--ok:#3fd08a;--bad:#ff5b6e;--line:#2b2b33}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f5f4fa;--card:#fff;--card2:#edecf5;--ink:#15131f;--mute:#6b6880;--acc:#5a4cd6;--onacc:#fff;--ok:#0b8f64;--bad:#c42648;--line:#e2e0ee}}
+body{font-family:Inter,"Segoe UI",system-ui,sans-serif}
+h1{color:var(--ink)}
+.card{border-color:transparent}.moon{border-color:rgba(232,194,107,.3)}
+.big{font-size:44px;letter-spacing:-1.5px;font-weight:700;line-height:1.1}
+.top{display:flex;align-items:center;gap:10px;margin-bottom:8px}.gr{flex:1;min-width:0}
+.av{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#ab9ff2,#4e44ce);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex:none}
+.av.g{background:rgba(63,208,138,.18);color:var(--ok)}.av.r{background:rgba(255,91,110,.18);color:var(--bad)}
+.ib{width:40px;height:40px;padding:0;display:flex;align-items:center;justify-content:center;color:var(--acc)}
+.bal{text-align:center;margin:18px 0 14px}
+.pill{display:inline-block;margin-top:8px;padding:4px 12px;border-radius:999px;font-size:14px;font-weight:600;color:var(--ok);background:rgba(63,208,138,.14)}.pill.neg{color:var(--bad);background:rgba(255,91,110,.14)}
+.acts{display:flex;justify-content:space-between;margin:6px 6px 14px}
+.act{background:none;border:none;padding:0;font-size:12px;color:var(--mute);display:flex;flex-direction:column;align-items:center;gap:6px}
+.act i{width:54px;height:54px;border-radius:50%;background:var(--card2);color:var(--acc);display:flex;align-items:center;justify-content:center}
+.it{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:18px;padding:12px;margin:8px 0}.rt{text-align:right}.it .mute{font-size:12px}
+button{border-radius:999px;border-color:transparent}button.p{background:var(--acc);color:var(--onacc)}
+input,textarea{border-radius:999px;background:var(--card);border-color:transparent}textarea{border-radius:16px}
+nav{background:var(--bg)}nav button.on{color:var(--acc)}nav button svg{display:block;margin:0 auto 2px}
+.chips button.on{color:var(--onacc)}
 </style></head><body>
 <main id="v"></main>
 <div id="bar"><div class="in"><div class="chips" id="chips"></div><div class="row"><input id="msg" placeholder="e.g. Shahgee 2 OG glass 500" autocomplete="off"><button class="p" id="go">Add</button></div></div></div>
 <nav id="nav"></nav>
 <script>
 const $=s=>document.querySelector(s);
-let db={sales:[],pays:[],costs:{},margin:20,lastBackup:0};
+let db={sales:[],pays:[],costs:{},stock:{},margin:20,lastBackup:0};
 try{const r=localStorage.getItem("hisab3");if(r)Object.assign(db,JSON.parse(r))}catch(e){}
 const save=()=>{try{localStorage.setItem("hisab3",JSON.stringify(db))}catch(e){}};
 const fmt=n=>"Rs "+Math.round(n).toLocaleString("en-IN");
@@ -126,26 +147,26 @@ function parse(raw){
 const pendTotal=p=>p.each?p.q*p.n:p.n;
 function toast(m){const e=document.createElement("div");e.className="toast";e.textContent=m;document.body.appendChild(e);setTimeout(()=>e.remove(),1800)}
 function copy(t,ok){const done=()=>toast(ok||"Copied");try{navigator.clipboard.writeText(t).then(done,fb)}catch(e){fb()}function fb(){const a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();try{document.execCommand("copy")}catch(e){}a.remove();done()}}
-function addMsg(){const r=parse($("#msg").value);if(!r)return;if(r.err){toast(r.err);return}
+function addMsg(){const v=$("#msg").value;if(/^\s*stock\b/i.test(v))return addStock(v);const r=parse(v);if(!r)return;if(r.err){toast(r.err);return}
  if(r.type==="pay"){db.pays.push({id:Date.now(),t:Date.now(),c:r.c,a:r.a});save();$("#msg").value="";pend=null;toast("Payment saved");return render()}
  pend=r;$("#msg").value="";render()}
-function savePend(){const p=pend,a=pendTotal(p);db.sales.push({id:Date.now(),t:Date.now(),c:p.c,p:p.p,q:p.q,a,cost:p.cost,st:p.st});if(p.cost!=null)db.costs[p.p.toLowerCase()]=p.cost;pend=null;save();toast("Saved. Alhamdulillah");render()}
-function del(id){db.sales=db.sales.filter(s=>s.id!==id);db.pays=db.pays.filter(s=>s.id!==id);save();render()}
+function savePend(){const p=pend,a=pendTotal(p);db.sales.push({id:Date.now(),t:Date.now(),c:p.c,p:p.p,q:p.q,a,cost:p.cost,st:p.st});const sk=db.stock[p.p.toLowerCase()];if(sk)sk.q=Math.max(0,sk.q-p.q);if(p.cost!=null)db.costs[p.p.toLowerCase()]=p.cost;pend=null;save();toast("Saved. Alhamdulillah");render()}
+function del(id){const sx=db.sales.find(x=>x.id===id),kx=sx&&db.stock[sx.p.toLowerCase()];if(kx)kx.q+=sx.q;db.sales=db.sales.filter(s=>s.id!==id);db.pays=db.pays.filter(s=>s.id!==id);save();render()}
 const today=()=>{const d=new Date();d.setHours(0,0,0,0);return+d};
-function entryHTML(e){const d=new Date(e.t).toLocaleDateString([],{day:"numeric",month:"short"});
- if(e.a!==undefined&&!e.p)return`<div class="bub pay row sp"><span>${esc(e.c)} paid <b>${fmt(e.a)}</b><br><span class="mute">${d}</span></span><button class="x" onclick="del(${e.id})">✕</button></div>`;
- return`<div class="bub ${e.st==="u"?"ud":"pd"} row sp"><span>${esc(e.c||"Cash sale")} · ${e.q} × ${esc(e.p)} = <b>${fmt(e.a)}</b><br><span class="mute">${e.st==="u"?"Udhaar":"Paid"} · ${d}</span></span><button class="x" onclick="del(${e.id})">✕</button></div>`}
-function vChat(){const t=today(),ts=db.sales.filter(s=>s.t>=t),sale=ts.reduce((a,s)=>a+s.a,0),pf=ts.reduce((a,s)=>a+profit(s),0),out=names().reduce((a,c)=>a+Math.max(0,bal(c)),0);
- const q=Q[Math.floor(Date.now()/864e5)%Q.length],old=db.sales.length&&Date.now()-db.lastBackup>3*864e5;
- const all=[...db.sales,...db.pays].sort((a,b)=>b.t-a.t).slice(0,10);
- let h=`<header><div><h1>Assalamu alaikum</h1><div class="mute">${hijri()}${new Date().getDay()===5?", Jumu’ah Mubarak":""}</div></div><button onclick="go('backup')">💾</button></header><div class="mute">Write a sale in your own words. I’ll sort it out.</div>
- <div class="card moon"><div class="ar">بِسْمِ ٱللَّٰهِ</div><p style="margin-top:6px">“${q[0]}”</p><div class="mute"><b>${q[1]}</b>, paraphrased</div><button style="margin-top:8px" onclick="go('hikmah')">More hikmah</button></div>
- <div class="stats"><div class="card"><span class="mute">Sales today</span><b>${fmt(sale)}</b></div><div class="card"><span class="mute">Profit today</span><b class="pos">${fmt(pf)}</b></div><div class="card"><span class="mute">Udhaar out</span><b class="neg">${fmt(out)}</b></div></div>`;
+function entryHTML(e){const d=new Date(e.t).toLocaleDateString([],{day:"numeric",month:"short"}),pay=e.p===undefined,nm=pay?e.c:(e.c||"Cash sale"),sub=pay?"Payment received":e.q+" × "+e.p,amt=pay?"+"+fmt(e.a):fmt(e.a),st=pay?"Received":e.st==="u"?"Udhaar":"Paid",cl=pay?"pos":e.st==="u"?"neg":"";
+ return`<div class="it"><div class="av ${pay?"g":e.st==="u"?"r":""}">${esc(nm[0].toUpperCase())}</div><div class="gr"><b>${esc(nm)}</b><div class="mute">${esc(sub)}, ${d}</div></div><div class="rt"><b class="${cl}">${amt}</b><div class="mute">${st}</div></div><button class="x" onclick="del(${e.id})">✕</button></div>`}
+function vChat(){const t=today(),ts=db.sales.filter(s=>s.t>=t),sale=ts.reduce((a,s)=>a+s.a,0),pf=ts.reduce((a,s)=>a+profit(s),0),rc=db.pays.filter(p=>p.t>=t).reduce((a,p)=>a+p.a,0),n=new Date(),ms=+new Date(n.getFullYear(),n.getMonth(),1),mp=db.sales.filter(s=>s.t>=ms).reduce((a,s)=>a+profit(s),0),out=names().reduce((a,c)=>a+Math.max(0,bal(c)),0);
+ const q=Q[Math.floor(Date.now()/864e5)%Q.length],old=db.sales.length&&Date.now()-db.lastBackup>3*864e5,low=Object.entries(db.stock).filter(x=>x[1].q<=3),all=[...db.sales,...db.pays].sort((a,b)=>b.t-a.t).slice(0,10);
+ let h=`<header class="top"><div class="av">H</div><div class="gr"><b>Assalamu alaikum</b><div class="mute">${hijri()}${n.getDay()===5?", Jumu’ah Mubarak":""}</div></div><button class="ib" onclick="go('backup')">${ic("save")}</button></header>
+ <div class="bal"><div class="mute">Profit this month</div><div class="big">${fmt(mp)}</div><span class="pill ${pf<0?"neg":""}">${pf<0?"":"+"}${fmt(pf)} today</span></div>
+ <div class="acts"><button class="act" onclick="mic()"><i>${ic("mic")}</i>Voice</button><button class="act" onclick="go('stock')"><i>${ic("box")}</i>Stock</button><button class="act" onclick="go('search')"><i>${ic("search")}</i>Find</button><button class="act" onclick="closeDay()"><i>${ic("moon")}</i>Close day</button></div>
+ <div class="card"><div class="row sp"><span class="mute">Sales today</span><b>${fmt(sale)}</b></div><div class="row sp" style="margin-top:6px"><span class="mute">Received today</span><b class="pos">${fmt(rc)}</b></div><div class="row sp" style="margin-top:6px"><span class="mute">Udhaar pending</span><b class="neg">${fmt(out)}</b></div></div>`;
+ if(low.length)h+=`<div class="card" onclick="go('stock')"><b>Low stock</b><div class="mute">${low.map(x=>esc(x[0])+" ("+x[1].q+")").join(", ")}</div></div>`;
  if(old)h+=`<div class="card row sp"><span>Back up your hisab today.</span><button onclick="go('backup')">Open</button></div>`;
- if(pend){const p=pend,a=pendTotal(p),u=p.cost!=null?p.cost:db.costs[p.p.toLowerCase()],pf=a-(u!=null?u*p.q:a*db.margin/100);
-  h+=`<div class="card moon"><b>Check before saving</b><p>${esc(p.c||"Cash sale")} · ${p.q} × ${esc(p.p)} = <b>${fmt(a)}</b><br>Profit about ${fmt(pf)}${u==null?" (estimated at "+db.margin+"%)":""}</p>
+ if(pend){const p=pend,a=pendTotal(p),k=p.p.toLowerCase(),u=p.cost!=null?p.cost:db.costs[k],pf2=a-(u!=null?u*p.q:a*db.margin/100),pr=db.sales.filter(s=>s.p.toLowerCase()===k),sk=db.stock[k];
+  h+=`<div class="card moon"><b>Check before saving</b><p>${esc(p.c||"Cash sale")}, ${p.q} × ${esc(p.p)} = <b>${fmt(a)}</b><br>Profit about ${fmt(pf2)}${u==null?" (estimated at "+db.margin+"%)":""}</p>${pr.length?`<div class="mute">Last price ${fmt(pr[pr.length-1].a/pr[pr.length-1].q)}, average ${fmt(pr.reduce((x,s)=>x+s.a/s.q,0)/pr.length)} each</div>`:""}${u!=null&&a/p.q<u?`<div class="neg">Below your cost of ${fmt(u)} each</div>`:""}${sk&&sk.q<p.q?`<div class="neg">Only ${sk.q} in stock</div>`:""}
   <div class="row" style="flex-wrap:wrap;margin-top:8px"><button onclick="pend.each=!pend.each;render()">${p.each?"Price is each":"Price is total"}</button>${p.c?`<button onclick="pend.st=pend.st==='u'?'p':'u';render()">${p.st==="u"?"Udhaar":"Paid"}</button>`:""}<button class="p" onclick="savePend()">Save</button><button onclick="pend=null;render()">Cancel</button></div></div>`}
- h+=`<h2>Recent</h2>`+(all.length?all.map(entryHTML).join(""):`<div class="card mute">Nothing yet. Try “Shahgee 2 OG glass 500”. Add “paid” or “cash” if money was received. “Shahgee paid 300” records a payment.</div>`);
+ h+=`<div class="card moon"><div class="ar">بِسْمِ ٱللَّٰهِ</div><p class="q">“${q[0]}”</p><div class="mute"><b>${q[1]}</b>, paraphrased</div><button style="margin-top:8px" onclick="go('hikmah')">More hikmah</button></div><h2>Recent</h2>`+(all.length?all.map(entryHTML).join(""):`<div class="card mute">Nothing yet. Try “Shahgee 2 OG glass 500”. Add “paid” or “cash” if money was received. “Shahgee paid 300” records a payment. “stock OG glass 50 cost 300” adds stock.</div>`);
  return h}
 function vLedger(){const cs=names().map(c=>[c,bal(c)]).filter(x=>x[1]!==0).sort((a,b)=>b[1]-a[1]),tot=cs.reduce((a,x)=>a+x[1],0);
  let h=`<h1>Udhaar ledger</h1><div class="card moon"><span class="mute">Total pending</span><div class="big">${fmt(tot)}</div></div>`;
@@ -165,7 +186,7 @@ function doSearch(){const q=$("#sq").value.trim().toLowerCase(),r=$("#res");if(!
 function vReports(){const n=new Date(),dim=new Date(n.getFullYear(),n.getMonth()+1,0).getDate(),day=n.getDate(),ms=+new Date(n.getFullYear(),n.getMonth(),1);
  const ss=db.sales.filter(s=>s.t>=ms),pf=ss.reduce((a,s)=>a+profit(s),0),sl=ss.reduce((a,s)=>a+s.a,0),first=ss.length?Math.max(1,Math.floor((n-Math.min(...ss.map(s=>s.t)))/864e5)+1):day;
  const f=pf/Math.max(first,1)*dim,pr=f?Math.min(100,pf/f*100):0,days=Array(dim).fill(0);ss.forEach(s=>days[new Date(s.t).getDate()-1]+=profit(s));const mx=Math.max(1,...days);
- return`<h1>Reports</h1><div class="card moon"><svg viewBox="0 0 200 110" width="100%"><path d="M20 100A80 80 0 0 1 180 100" fill="none" stroke="var(--line)" stroke-width="14" stroke-linecap="round"/><path d="M20 100A80 80 0 0 1 180 100" fill="none" stroke="var(--gold)" stroke-width="14" stroke-linecap="round" pathLength="100" stroke-dasharray="${pr} 100"/><text x="100" y="82" text-anchor="middle" fill="var(--ink)" font-size="22" font-weight="800">${fmt(pf)}</text><text x="100" y="100" text-anchor="middle" fill="var(--mute)" font-size="10">profit this month</text></svg>
+ return`<h1>Reports</h1><div class="card moon"><svg viewBox="0 0 200 110" width="100%"><path d="M20 100A80 80 0 0 1 180 100" fill="none" stroke="var(--line)" stroke-width="14" stroke-linecap="round"/><path d="M20 100A80 80 0 0 1 180 100" fill="none" stroke="var(--acc)" stroke-width="14" stroke-linecap="round" pathLength="100" stroke-dasharray="${pr} 100"/><text x="100" y="82" text-anchor="middle" fill="var(--ink)" font-size="22" font-weight="800">${fmt(pf)}</text><text x="100" y="100" text-anchor="middle" fill="var(--mute)" font-size="10">profit this month</text></svg>
  <div class="row sp"><span>Expected by month end</span><b class="pos">${fmt(f)}</b></div><div class="mute">Based on ${ss.length?first+" days of sales":"no sales yet"}. It’s a guess, not a promise.</div></div>
  <div class="stats"><div class="card"><span class="mute">Sales</span><b>${fmt(sl)}</b></div><div class="card"><span class="mute">Entries</span><b>${ss.length}</b></div><div class="card"><span class="mute">Margin used</span><b>${db.margin}%</b></div></div>
  <h2>Profit by day</h2><div class="card"><div class="bars">${days.map(v=>`<i style="height:${v/mx*100}%"></i>`).join("")}</div><div class="row sp mute"><span>1</span><span>${dim}</span></div></div>
@@ -173,11 +194,19 @@ function vReports(){const n=new Date(),dim=new Date(n.getFullYear(),n.getMonth()
  <div class="card moon"><b>Sadaqah idea</b><div class="mute">1% of this month’s profit would be ${fmt(Math.max(0,pf)/100)}. Optional, your intention counts.</div></div>`}
 function vBackup(){const d=db.lastBackup?Math.floor((Date.now()-db.lastBackup)/864e5)+" days ago":"never";
  return`<h1>Backup</h1><div class="card"><b>Last backup: ${d}</b><div class="mute">Your hisab lives on this phone. Copy a backup and keep it in WhatsApp saved messages or Notes.</div>
- <div class="row" style="flex-wrap:wrap;margin-top:10px"><button class="p" onclick="bk()">Copy backup</button>${navigator.share?`<button onclick="bk(1)">Share backup</button>`:""}<button onclick="csv()">Copy as CSV</button><button onclick="dl()">Save as file</button>${ip?`<button onclick="ip.prompt()">Install app</button>`:""}</div></div>
+ <div class="row" style="flex-wrap:wrap;margin-top:10px"><button class="p" onclick="bk()">Copy backup</button>${navigator.share?`<button onclick="bk(1)">Share backup</button>`:""}<button onclick="csv()">Copy as CSV</button><button onclick="db.vl=db.vl==='ur-PK'?'en-IN':'ur-PK';save();render()">Voice: ${db.vl==='ur-PK'?'Urdu':'English'}</button><button onclick="dl()">Save as file</button>${ip?`<button onclick="ip.prompt()">Install app</button>`:""}</div></div>
  <h2>Restore</h2><div class="card"><textarea id="rs" placeholder="Paste your backup here"></textarea><button class="p" style="margin-top:8px" onclick="rst()">Restore from paste</button><input type="file" accept=".json" onchange="rfile(this)" style="margin-top:8px"><div class="mute">This replaces what is on this phone now.</div></div>`}
 function bk(s){const t=JSON.stringify(db);db.lastBackup=Date.now();save();if(s&&navigator.share)navigator.share({text:t}).catch(()=>{});else copy(t,"Backup copied");render()}
 function csv(){copy("Date,Customer,Product,Qty,Total,Status\n"+db.sales.map(s=>[new Date(s.t).toISOString().slice(0,10),s.c,s.p,s.q,s.a,s.st==="u"?"Udhaar":"Paid"].map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(",")).join("\n"),"CSV copied")}
-function rst(){try{const o=JSON.parse($("#rs").value);if(!o.sales)throw 0;db=Object.assign({sales:[],pays:[],costs:{},margin:20,lastBackup:0},o);save();toast("Restored");render()}catch(e){toast("That isn’t a valid backup")}}
+function rst(){try{const o=JSON.parse($("#rs").value);if(!o.sales)throw 0;db=Object.assign({sales:[],pays:[],costs:{},stock:{},margin:20,lastBackup:0},o);save();toast("Restored");render()}catch(e){toast("That isn’t a valid backup")}}
+const IC={home:"M3 11l9-8 9 8M5 9.5V20h14V9.5",book:"M4 7h16v12H4zM4 7l2-3h12l2 3M16 13h2",search:"M11 4a7 7 0 100 14 7 7 0 000-14zM21 21l-4.5-4.5",chart:"M4 20V10M10 20V4M16 20v-8M21 20H3",moon:"M20 14.5A8 8 0 119.5 4a6.5 6.5 0 0010.5 10.5z",mic:"M12 3a3 3 0 00-3 3v6a3 3 0 006 0V6a3 3 0 00-3-3zM5 11a7 7 0 0014 0M12 18v3",box:"M3 7l9-4 9 4v10l-9 4-9-4zM3 7l9 4 9-4M12 11v10",save:"M5 4h11l3 3v13H5zM8 4v5h7V4M8 20v-6h8v6"};
+const ic=n=>`<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${IC[n]}"/></svg>`;
+function addStock(v){let c=null;v=v.replace(/\b(?:cost|cp)\s*(\d+(?:\.\d+)?)/i,(m,a)=>{c=+a;return " "}).replace(/stock/i," ");const n=(v.match(/\d+(?:\.\d+)?/g)||[]).map(Number),p=v.replace(/\d+(?:\.\d+)?/g," ").replace(/\s+/g," ").trim().toLowerCase();if(!p||!n.length){toast("Try: stock OG glass 50 cost 300");return}const o=db.stock[p]||{q:0};o.q+=n[0];if(c!=null){o.cost=c;db.costs[p]=c}db.stock[p]=o;save();$("#msg").value="";toast("Stock updated");render()}
+function vStock(){const l=Object.entries(db.stock).sort((a,b)=>a[1].q-b[1].q),val=l.reduce((a,x)=>a+x[1].q*(x[1].cost||0),0),low=l.filter(x=>x[1].q<=3);
+ return`<h1>Stock</h1><div class="card moon"><span class="mute">Stock value at cost</span><div class="big">${fmt(val)}</div></div>`+(l.length?l.map(([p,o])=>`<div class="it"><div class="av ${o.q<=3?"r":""}">${esc(p[0].toUpperCase())}</div><div class="gr"><b>${esc(p)}</b><div class="mute">${o.cost!=null?"Cost "+fmt(o.cost):"No cost set"}</div></div><div class="rt"><b class="${o.q<=3?"neg":""}">${o.q} left</b><div class="mute">${fmt(o.q*(o.cost||0))}</div></div></div>`).join(""):`<div class="card mute">No stock yet. In Home, type “stock OG glass 50 cost 300”.</div>`)+(low.length?`<button class="p" style="width:100%;margin-top:10px" onclick="reorder()">Copy reorder list</button>`:"")}
+function reorder(){copy("Reorder list\n"+Object.entries(db.stock).filter(x=>x[1].q<=3).map(x=>x[0]+" ("+x[1].q+" left)").join("\n"),"List copied")}
+function mic(){const R=window.SpeechRecognition||window.webkitSpeechRecognition;if(!R)return toast("Voice isn’t supported in this browser");const m=new R();m.lang=db.vl||"en-IN";m.onresult=e=>{$("#msg").value=e.results[0][0].transcript;addMsg()};m.onerror=()=>toast("Couldn’t hear that");m.start();toast("Listening")}
+function closeDay(){const t=today(),ts=db.sales.filter(s=>s.t>=t),q=Q[Math.floor(Date.now()/864e5)%Q.length],sm=(l,f)=>fmt(l.reduce((a,x)=>a+f(x),0));copy(`Closing summary, ${hijri()}\nSales: ${sm(ts,s=>s.a)}\nProfit: ${sm(ts,profit)}\nNew udhaar: ${sm(ts.filter(s=>s.st==="u"),s=>s.a)}\nReceived: ${sm(db.pays.filter(p=>p.t>=t),p=>p.a)}\n\n“${q[0]}” (${q[1]})`,"Summary copied")}
 function hijri(){try{return new Intl.DateTimeFormat("en-u-ca-islamic-umalqura",{day:"numeric",month:"long",year:"numeric"}).format(new Date())}catch(e){return new Date().toLocaleDateString()}}
 function topP(ss){const m={};ss.forEach(s=>{const k=s.p.toLowerCase();m[k]=(m[k]||0)+profit(s)});const l=Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,5);return l.length?l.map(x=>`<div class="row sp"><span>${esc(x[0])}</span><b class="pos">${fmt(x[1])}</b></div>`).join(""):"<span class='mute'>No sales yet this month.</span>"}
 let hf="All",ip=null;const TOPICS=["All",...new Set(Q.map(q=>q[2]))];
@@ -187,11 +216,11 @@ addEventListener("beforeinstallprompt",e=>{e.preventDefault();ip=e;if(tab==="bac
 function dl(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(db)],{type:"application/json"}));a.download="hisab-backup-"+new Date().toISOString().slice(0,10)+".json";a.click();db.lastBackup=Date.now();save();render()}
 function rfile(i){const f=i.files[0];if(f)f.text().then(t=>{$("#rs").value=t;rst()})}
 if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
-const T=[["chat","💬","Chat"],["ledger","📒","Ledger"],["search","🔎","Find"],["reports","📈","Reports"],["hikmah","🌙","Hikmah"]];
+const T=[["chat","home","Home"],["ledger","book","Ledger"],["search","search","Find"],["reports","chart","Reports"],["hikmah","moon","Hikmah"]];
 function go(t){tab=t;render();scrollTo(0,0)}
-function render(){$("#nav").innerHTML=T.map(x=>`<button class="${tab===x[0]?"on":""}" onclick="go('${x[0]}')"><span>${x[1]}</span>${x[2]}</button>`).join("");
+function render(){$("#nav").innerHTML=T.map(x=>`<button class="${tab===x[0]?"on":""}" onclick="go('${x[0]}')">${ic(x[1])}${x[2]}</button>`).join("");
  $("#bar").style.display=tab==="chat"?"block":"none";
- $("#v").innerHTML=({chat:vChat,ledger:vLedger,search:vSearch,reports:vReports,backup:vBackup,hikmah:vHikmah})[tab]();
+ $("#v").innerHTML=({chat:vChat,ledger:vLedger,search:vSearch,reports:vReports,backup:vBackup,hikmah:vHikmah,stock:vStock})[tab]();
  const pr=[...new Set(db.sales.slice().reverse().map(s=>s.p))].slice(0,6),cu=names().slice(0,5);
  $("#chips").innerHTML=[...cu,...pr].map(x=>`<button onclick="$('#msg').value+=($('#msg').value?' ':'')+this.textContent;$('#msg').focus()">${esc(x)}</button>`).join("")}
 $("#go").onclick=addMsg;$("#msg").addEventListener("keydown",e=>{if(e.key==="Enter")addMsg()});
