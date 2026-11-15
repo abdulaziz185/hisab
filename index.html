@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Hisab AI V4</title><meta name="theme-color" content="#121214"><meta name="description" content="Halal-minded sales and udhaar hisab"><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
+<title>Hisab AI V5</title><meta name="theme-color" content="#121214"><meta name="description" content="Halal-minded sales and udhaar hisab"><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
 <style>
 :root{--bg:#121214;--card:#1a1030;--card2:#261549;--ink:#f3ecff;--mute:#9d8fbd;--acc:#9b6bff;--gold:#e8c26b;--ok:#4fd1a1;--bad:#ff7a90;--line:#33214f;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -62,7 +62,7 @@ nav{background:var(--bg)}nav button.on{color:var(--acc)}nav button svg{display:b
 .chips button.on{color:var(--onacc)}
 </style></head><body>
 <main id="v"></main>
-<div id="bar"><div class="in"><div class="chips" id="chips"></div><div class="row"><input id="msg" placeholder="e.g. Shahgee 2 OG glass 500" autocomplete="off"><button class="p" id="go">Add</button></div></div></div>
+<div id="bar"><div class="in"><div class="chips" id="chips"></div><div class="row"><input id="msg" placeholder="Sale, payment, or ask a question" autocomplete="off"><button class="p" id="go">Add</button></div></div></div>
 <nav id="nav"></nav>
 <script>
 const $=s=>document.querySelector(s);
@@ -134,27 +134,29 @@ function parse(raw){
  if(!/^\d/.test(tok[0])&&!/^(cash|sold|sale|sell|paid)$/i.test(tok[0]))cust=match(tok.shift());
  let rest=tok.join(" "),cost=null;
  rest=rest.replace(/\b(?:cost|cp|kharid)\s*(\d+(?:\.\d+)?)/i,(m,a)=>{cost=+a;return " "});
- const payW=/\b(paid|pay|received|recieved|mila|mile|diye|diya|jama|cash)\b/i.test(rest);
+ let disc=null;rest=rest.replace(/\bdiscount\s*(\d+(?:\.\d+)?)/i,(m,a)=>{disc=+a;return " "});const ret=/\b(returned?|wapas|wapis)\b/i.test(rest);const payW=/\b(paid|pay|received|recieved|mila|mile|diye|diya|jama|cash)\b/i.test(rest);
  const tot=/\b(total|kul)\b/i.test(rest);
- rest=rest.replace(/\b(total|kul|each|per|har|x|paid|pay|received|recieved|mila|mile|diye|diya|jama|cash|pcs|pc|pieces?|sold|sale|sell|rs|rupees|udhaar)\b|@/ig," ");
+ rest=rest.replace(/\b(total|kul|each|per|har|x|paid|pay|received|recieved|mila|mile|diye|diya|jama|cash|pcs|pc|pieces?|sold|sale|sell|rs|rupees|udhaar|returned?|wapas|wapis)\b|@/ig," ");
  const nums=(rest.match(/\d+(?:\.\d+)?/g)||[]).map(Number);
  const prod=rest.replace(/\d+(?:\.\d+)?/g," ").replace(/\s+/g," ").trim();
+ if(disc!=null&&cust&&!prod&&!nums.length)return{type:"sale",c:cust,p:"Discount",q:1,n:-disc,each:false,cost:0,st:"u"};
+ if(ret){const q=nums[0]||1,l=lastU(cust,prod),u=nums.length>1?nums[nums.length-1]:l&&l.u;if(!u)return{err:"Add the price, e.g. Shahgee returned 1 OG glass 500"};return{type:"sale",c:cust,p:prod||"Item",q:-q,n:u,each:true,cost:null,st:cust&&l&&l.st==="u"?"u":"p",disc:0}}
  if(!nums.length)return{err:"Add a price, e.g. Shahgee 2 OG glass 500"};
  if(cust&&payW&&!prod)return{type:"pay",c:cust,a:nums[nums.length-1]};
  const q=nums.length>1?nums[0]:1,n=nums[nums.length-1];
- return{type:"sale",c:cust,p:prod||"Item",q,n,each:!tot&&nums.length>1,cost,st:(!cust||payW)?"p":"u"};
+ return{type:"sale",c:cust,p:prod||"Item",q,n,each:!tot&&nums.length>1,cost,st:(!cust||payW)?"p":"u",disc:disc||0};
 }
-const pendTotal=p=>p.each?p.q*p.n:p.n;
+const pendTotal=p=>(p.each?p.q*p.n:p.n)-(p.disc||0);
 function toast(m){const e=document.createElement("div");e.className="toast";e.textContent=m;document.body.appendChild(e);setTimeout(()=>e.remove(),1800)}
 function copy(t,ok){const done=()=>toast(ok||"Copied");try{navigator.clipboard.writeText(t).then(done,fb)}catch(e){fb()}function fb(){const a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();try{document.execCommand("copy")}catch(e){}a.remove();done()}}
-function addMsg(){const v=$("#msg").value;if(/^\s*stock\b/i.test(v))return addStock(v);const r=parse(v);if(!r)return;if(r.err){toast(r.err);return}
+function addMsg(){const v=$("#msg").value;if(/^\s*stock\b/i.test(v))return addStock(v);if(/\?|^\s*(how|what|which|who|when|show|kitna|kitne|kon|konsa)\b/i.test(v)){ask(v);$("#msg").value="";return render()}const r=parse(v);if(!r)return;if(r.err){toast(r.err);return}
  if(r.type==="pay"){db.pays.push({id:Date.now(),t:Date.now(),c:r.c,a:r.a});save();$("#msg").value="";pend=null;toast("Payment saved");return render()}
  pend=r;$("#msg").value="";render()}
 function savePend(){const p=pend,a=pendTotal(p);db.sales.push({id:Date.now(),t:Date.now(),c:p.c,p:p.p,q:p.q,a,cost:p.cost,st:p.st});const sk=db.stock[p.p.toLowerCase()];if(sk)sk.q=Math.max(0,sk.q-p.q);if(p.cost!=null)db.costs[p.p.toLowerCase()]=p.cost;pend=null;save();toast("Saved. Alhamdulillah");render()}
 function del(id){const sx=db.sales.find(x=>x.id===id),kx=sx&&db.stock[sx.p.toLowerCase()];if(kx)kx.q+=sx.q;db.sales=db.sales.filter(s=>s.id!==id);db.pays=db.pays.filter(s=>s.id!==id);save();render()}
 const today=()=>{const d=new Date();d.setHours(0,0,0,0);return+d};
-function entryHTML(e){const d=new Date(e.t).toLocaleDateString([],{day:"numeric",month:"short"}),pay=e.p===undefined,nm=pay?e.c:(e.c||"Cash sale"),sub=pay?"Payment received":e.q+" × "+e.p,amt=pay?"+"+fmt(e.a):fmt(e.a),st=pay?"Received":e.st==="u"?"Udhaar":"Paid",cl=pay?"pos":e.st==="u"?"neg":"";
- return`<div class="it"><div class="av ${pay?"g":e.st==="u"?"r":""}">${esc(nm[0].toUpperCase())}</div><div class="gr"><b>${esc(nm)}</b><div class="mute">${esc(sub)}, ${d}</div></div><div class="rt"><b class="${cl}">${amt}</b><div class="mute">${st}</div></div><button class="x" onclick="del(${e.id})">✕</button></div>`}
+function entryHTML(e){const d=new Date(e.t).toLocaleDateString([],{day:"numeric",month:"short"}),pay=e.p===undefined,nm=pay?e.c:(e.c||"Cash sale"),sub=pay?"Payment received":e.p==="Discount"?"Discount":e.q<0?"Return, "+(-e.q)+" × "+e.p:e.q+" × "+e.p,amt=pay?"+"+fmt(e.a):fmt(e.a),st=pay?"Received":e.st==="u"?"Udhaar":"Paid",cl=pay||e.a<0?"pos":e.st==="u"?"neg":"";
+ return`<div class="it"><div class="av ${pay||e.a<0?"g":e.st==="u"?"r":""}">${esc(nm[0].toUpperCase())}</div><div class="gr"><b>${esc(nm)}</b><div class="mute">${esc(sub)}, ${d}</div></div><div class="rt"><b class="${cl}">${amt}</b><div class="mute">${st}</div></div><button class="x" onclick="del(${e.id})">✕</button></div>`}
 function vChat(){const t=today(),ts=db.sales.filter(s=>s.t>=t),sale=ts.reduce((a,s)=>a+s.a,0),pf=ts.reduce((a,s)=>a+profit(s),0),rc=db.pays.filter(p=>p.t>=t).reduce((a,p)=>a+p.a,0),n=new Date(),ms=+new Date(n.getFullYear(),n.getMonth(),1),mp=db.sales.filter(s=>s.t>=ms).reduce((a,s)=>a+profit(s),0),out=names().reduce((a,c)=>a+Math.max(0,bal(c)),0);
  const q=Q[Math.floor(Date.now()/864e5)%Q.length],old=db.sales.length&&Date.now()-db.lastBackup>3*864e5,low=Object.entries(db.stock).filter(x=>x[1].q<=3),all=[...db.sales,...db.pays].sort((a,b)=>b.t-a.t).slice(0,10);
  let h=`<header class="top"><div class="av">H</div><div class="gr"><b>Assalamu alaikum</b><div class="mute">${hijri()}${n.getDay()===5?", Jumu’ah Mubarak":""}</div></div><button class="ib" onclick="go('backup')">${ic("save")}</button></header>
@@ -163,8 +165,8 @@ function vChat(){const t=today(),ts=db.sales.filter(s=>s.t>=t),sale=ts.reduce((a
  <div class="card"><div class="row sp"><span class="mute">Sales today</span><b>${fmt(sale)}</b></div><div class="row sp" style="margin-top:6px"><span class="mute">Received today</span><b class="pos">${fmt(rc)}</b></div><div class="row sp" style="margin-top:6px"><span class="mute">Udhaar pending</span><b class="neg">${fmt(out)}</b></div></div>`;
  if(low.length)h+=`<div class="card" onclick="go('stock')"><b>Low stock</b><div class="mute">${low.map(x=>esc(x[0])+" ("+x[1].q+")").join(", ")}</div></div>`;
  if(old)h+=`<div class="card row sp"><span>Back up your hisab today.</span><button onclick="go('backup')">Open</button></div>`;
- if(pend){const p=pend,a=pendTotal(p),k=p.p.toLowerCase(),u=p.cost!=null?p.cost:db.costs[k],pf2=a-(u!=null?u*p.q:a*db.margin/100),pr=db.sales.filter(s=>s.p.toLowerCase()===k),sk=db.stock[k];
-  h+=`<div class="card moon"><b>Check before saving</b><p>${esc(p.c||"Cash sale")}, ${p.q} × ${esc(p.p)} = <b>${fmt(a)}</b><br>Profit about ${fmt(pf2)}${u==null?" (estimated at "+db.margin+"%)":""}</p>${pr.length?`<div class="mute">Last price ${fmt(pr[pr.length-1].a/pr[pr.length-1].q)}, average ${fmt(pr.reduce((x,s)=>x+s.a/s.q,0)/pr.length)} each</div>`:""}${u!=null&&a/p.q<u?`<div class="neg">Below your cost of ${fmt(u)} each</div>`:""}${sk&&sk.q<p.q?`<div class="neg">Only ${sk.q} in stock</div>`:""}
+ if(ans)h+=`<div class="card moon"><div class="mute">${esc(ans[0])}</div><p style="margin:6px 0">${esc(ans[1])}</p><button onclick="ans=null;render()">Close</button></div>`;if(pend){const p=pend,a=pendTotal(p),k=p.p.toLowerCase(),u=p.cost!=null?p.cost:db.costs[k],pf2=a-(u!=null?u*p.q:a*db.margin/100),pr=db.sales.filter(s=>s.p.toLowerCase()===k),sk=db.stock[k];
+  h+=`<div class="card moon"><b>${p.q<0?"Return, check before saving":"Check before saving"}</b><p>${esc(p.c||"Cash sale")}, ${p.q} × ${esc(p.p)} = <b>${fmt(a)}</b>${p.disc?" after discount "+fmt(p.disc):""}<br>Profit about ${fmt(pf2)}${u==null?" (estimated at "+db.margin+"%)":""}</p>${pr.length?`<div class="mute">Last price ${fmt(pr[pr.length-1].a/pr[pr.length-1].q)}, average ${fmt(pr.reduce((x,s)=>x+s.a/s.q,0)/pr.length)} each</div>`:""}${u!=null&&a/p.q<u?`<div class="neg">Below your cost of ${fmt(u)} each</div>`:""}${sk&&sk.q<p.q?`<div class="neg">Only ${sk.q} in stock</div>`:""}
   <div class="row" style="flex-wrap:wrap;margin-top:8px"><button onclick="pend.each=!pend.each;render()">${p.each?"Price is each":"Price is total"}</button>${p.c?`<button onclick="pend.st=pend.st==='u'?'p':'u';render()">${p.st==="u"?"Udhaar":"Paid"}</button>`:""}<button class="p" onclick="savePend()">Save</button><button onclick="pend=null;render()">Cancel</button></div></div>`}
  h+=`<div class="card moon"><div class="ar">بِسْمِ ٱللَّٰهِ</div><p class="q">“${q[0]}”</p><div class="mute"><b>${q[1]}</b>, paraphrased</div><button style="margin-top:8px" onclick="go('hikmah')">More hikmah</button></div><h2>Recent</h2>`+(all.length?all.map(entryHTML).join(""):`<div class="card mute">Nothing yet. Try “Shahgee 2 OG glass 500”. Add “paid” or “cash” if money was received. “Shahgee paid 300” records a payment. “stock OG glass 50 cost 300” adds stock.</div>`);
  return h}
@@ -174,14 +176,14 @@ function vLedger(){const cs=names().map(c=>[c,bal(c)]).filter(x=>x[1]!==0).sort(
  cs.forEach(([c,b])=>{h+=`<div class="card"><div class="row sp" onclick="openC=openC==='${esc(c)}'?null:'${esc(c)}';render()"><b>${esc(c)}</b><b class="${b>0?"neg":"pos"}">${fmt(b)}</b></div>`;
   if(openC===c){const l=[...db.sales.filter(s=>sameC(s.c,c)&&s.st==="u"),...db.pays.filter(s=>sameC(s.c,c))].sort((a,b)=>b.t-a.t).slice(0,8);
    h+=l.map(entryHTML).join("")+`<div class="row"><input id="pa" type="number" inputmode="numeric" placeholder="Amount received"><button class="p" onclick="recv('${esc(c)}')">Save</button></div>
-   <button style="margin-top:8px" onclick="copy('Assalamu alaikum ${esc(c)}, a gentle reminder that ${fmt(b)} is pending with us. Take your time, JazakAllah khair.','Reminder copied')">Copy gentle reminder</button>`}
-  h+=`</div>`});return h}
+   <button style="margin-top:8px" onclick="copy('Assalamu alaikum ${esc(c)}, a gentle reminder that ${fmt(b)} is pending with us. Take your time, JazakAllah khair.','Reminder copied')">Copy gentle reminder</button> <button onclick="prof='${esc(c)}';go('profile')">Profile</button>`}
+  h+=`</div>`});return h+"<h2>All customers</h2>"+(names().sort().map(c=>{const L=db.sales.filter(s=>sameC(s.c,c));return`<div class="it" onclick="prof='${esc(c)}';go('profile')"><div class="av">${esc(c[0])}</div><div class="gr"><b>${esc(c)}</b><div class="mute">${L.length} entries</div></div><div class="rt"><b>${fmt(L.reduce((a,x)=>a+x.a,0))}</b><div class="mute">total bought</div></div></div>`}).join("")||"<div class='card mute'>No customers yet.</div>")}
 function recv(c){const a=+$("#pa").value;if(!a)return toast("Enter an amount");db.pays.push({id:Date.now(),t:Date.now(),c,a});save();toast("Payment saved");render()}
 function vSearch(){return`<h1>Find a past sale</h1><div class="mute">Search a product or customer from all your old hisab.</div><input id="sq" placeholder="Type a product name" style="margin:10px 0" oninput="doSearch()"><div id="res"></div>`}
 function doSearch(){const q=$("#sq").value.trim().toLowerCase(),r=$("#res");if(!q){r.innerHTML="";return}
  const m=db.sales.filter(s=>s.p.toLowerCase().includes(q)||s.c.toLowerCase().includes(q)).sort((a,b)=>b.t-a.t);
  if(!m.length){r.innerHTML=`<div class="card mute">No match. Check the spelling or try fewer letters.</div>`;return}
- const u=m.map(s=>s.a/s.q),avg=u.reduce((a,b)=>a+b,0)/u.length;
+ const u0=m.filter(s=>s.q>0&&s.p!=="Discount").map(s=>s.a/s.q),u=u0.length?u0:[0],avg=u.reduce((a,b)=>a+b,0)/u.length;
  r.innerHTML=`<div class="card moon"><b>${m.length} sales found</b><br>Last price: <b>${fmt(u[0])}</b> each · Average: <b>${fmt(avg)}</b> · Range: ${fmt(Math.min(...u))} to ${fmt(Math.max(...u))}</div>`+m.slice(0,30).map(entryHTML).join("")}
 function vReports(){const n=new Date(),dim=new Date(n.getFullYear(),n.getMonth()+1,0).getDate(),day=n.getDate(),ms=+new Date(n.getFullYear(),n.getMonth(),1);
  const ss=db.sales.filter(s=>s.t>=ms),pf=ss.reduce((a,s)=>a+profit(s),0),sl=ss.reduce((a,s)=>a+s.a,0),first=ss.length?Math.max(1,Math.floor((n-Math.min(...ss.map(s=>s.t)))/864e5)+1):day;
@@ -207,6 +209,22 @@ function vStock(){const l=Object.entries(db.stock).sort((a,b)=>a[1].q-b[1].q),va
 function reorder(){copy("Reorder list\n"+Object.entries(db.stock).filter(x=>x[1].q<=3).map(x=>x[0]+" ("+x[1].q+" left)").join("\n"),"List copied")}
 function mic(){const R=window.SpeechRecognition||window.webkitSpeechRecognition;if(!R)return toast("Voice isn’t supported in this browser");const m=new R();m.lang=db.vl||"en-IN";m.onresult=e=>{$("#msg").value=e.results[0][0].transcript;addMsg()};m.onerror=()=>toast("Couldn’t hear that");m.start();toast("Listening")}
 function closeDay(){const t=today(),ts=db.sales.filter(s=>s.t>=t),q=Q[Math.floor(Date.now()/864e5)%Q.length],sm=(l,f)=>fmt(l.reduce((a,x)=>a+f(x),0));copy(`Closing summary, ${hijri()}\nSales: ${sm(ts,s=>s.a)}\nProfit: ${sm(ts,profit)}\nNew udhaar: ${sm(ts.filter(s=>s.st==="u"),s=>s.a)}\nReceived: ${sm(db.pays.filter(p=>p.t>=t),p=>p.a)}\n\n“${q[0]}” (${q[1]})`,"Summary copied")}
+let prof=null,ans=null;
+function lastU(c,p){const k=p.toLowerCase(),l=db.sales.filter(s=>s.q>0&&s.p.toLowerCase()===k&&(!c||sameC(s.c,c))),x=l.length?l[l.length-1]:db.sales.filter(y=>y.q>0&&y.p.toLowerCase()===k).pop();return x?{u:x.a/x.q,st:x.st}:null}
+function again(c,p){const l=lastU(c,p);go("chat");$("#msg").value=c+" 1 "+p+(l?" "+Math.round(l.u):"");$("#msg").focus()}
+function statement(){const c=prof,L=[...db.sales.filter(s=>s.st==="u"&&sameC(s.c,c)).map(s=>[s.t,s.q+" × "+s.p+" "+fmt(s.a)]),...db.pays.filter(p=>sameC(p.c,c)).map(p=>[p.t,"Paid "+fmt(p.a)])].sort((a,b)=>a[0]-b[0]).slice(-12);copy("Assalamu alaikum "+c+"\nStatement\n"+L.map(x=>new Date(x[0]).toLocaleDateString([],{day:"numeric",month:"short"})+": "+x[1]).join("\n")+"\nPending: "+fmt(bal(c))+"\nJazakAllah khair","Statement copied")}
+function vProfile(){const c=prof;if(!c)return vLedger();const L=db.sales.filter(s=>sameC(s.c,c)),Pm=db.pays.filter(p=>sameC(p.c,c)),B=L.filter(s=>s.q>0).sort((a,b)=>a.t-b.t),m={};B.forEach(s=>m[s.p]=(m[s.p]||0)+s.q);const u=Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,5),last=B.length?B[B.length-1]:null,days=last?Math.floor((Date.now()-last.t)/864e5):0,b=bal(c),row=(k,v)=>`<div class="row sp" style="margin-top:6px"><span class="mute">${k}</span><b>${v}</b></div>`;
+ return`<div class="row"><button class="ib" onclick="go('ledger')">‹</button><h1>${esc(c)}</h1></div><div class="card moon"><span class="mute">Pending udhaar</span><div class="big ${b>0?"neg":"pos"}">${fmt(b)}</div></div><div class="card">${row("Total bought",fmt(L.reduce((a,s)=>a+s.a,0)))}${row("Paid so far",fmt(Pm.reduce((a,p)=>a+p.a,0)))}${row("Average sale",fmt(B.length?B.reduce((a,s)=>a+s.a,0)/B.length:0))}${row("Last purchase",last?(days?days+" days ago":"today"):"none")}</div><h2>Usual items</h2><div class="chips">${u.map(x=>`<button onclick="again('${esc(c)}','${esc(x[0])}')">${esc(x[0])} (${x[1]})</button>`).join("")||"<span class='mute'>No items yet.</span>"}</div><h2>History</h2>`+[...L,...Pm].sort((a,b)=>b.t-a.t).slice(0,15).map(entryHTML).join("")+`<button style="margin-top:8px" onclick="statement()">Copy statement</button>`}
+function ask(v){const t=v.toLowerCase(),n=new Date(),d0=today(),P=/yesterday|kal/.test(t)?[d0-864e5,d0,"yesterday"]:/today|aaj/.test(t)?[d0,1e15,"today"]:/week/.test(t)?[d0-6*864e5,1e15,"the last 7 days"]:/year/.test(t)?[+new Date(n.getFullYear(),0,1),1e15,"this year"]:/\ball\b|total|ever/.test(t)?[0,1e15,"all time"]:[+new Date(n.getFullYear(),n.getMonth(),1),1e15,"this month"];
+ const S=db.sales.filter(s=>s.t>=P[0]&&s.t<P[1]),sm=(l,f)=>l.reduce((a,x)=>a+f(x),0),c=names().find(x=>t.includes(x.toLowerCase())),pk=[...new Set([...Object.keys(db.stock),...db.sales.map(s=>s.p.toLowerCase())])].find(k=>k!=="discount"&&t.includes(k));let a;
+ if(c){const L=S.filter(s=>sameC(s.c,c)&&s.q>0&&s.p!=="Discount");a=`${c} owes ${fmt(bal(c))}. Bought ${fmt(sm(L,s=>s.a))} across ${L.length} sales (${P[2]}).`+(L.length?` Last item: ${L[L.length-1].p}.`:"")}
+ else if(/owe|udhaar|pending|baqaya|baqi/.test(t)){const o=names().map(x=>[x,bal(x)]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,5);a=o.length?"Pending udhaar: "+o.map(x=>x[0]+" "+fmt(x[1])).join(", ")+".":"Nobody owes you anything."}
+ else if(pk){const L=S.filter(s=>s.p.toLowerCase()===pk),k=db.stock[pk];a=`${pk} (${P[2]}): sold ${sm(L,s=>s.q)}, profit ${fmt(sm(L,profit))}.`+(k?` ${k.q} left in stock.`:"")}
+ else if(/best|top|most|earn|zyada/.test(t)){const m={};S.forEach(s=>m[s.p.toLowerCase()]=(m[s.p.toLowerCase()]||0)+profit(s));const l=Object.entries(m).filter(x=>x[0]!=="discount").sort((a,b)=>b[1]-a[1]).slice(0,3);a=l.length?`Top by profit (${P[2]}): `+l.map(x=>x[0]+" "+fmt(x[1])).join(", ")+".":"No sales in that period yet."}
+ else if(/stock|left|low/.test(t)){const l=Object.entries(db.stock).filter(x=>x[1].q<=3);a=l.length?"Running low: "+l.map(x=>x[0]+" ("+x[1].q+")").join(", ")+".":"Nothing is running low."}
+ else if(/profit|nafa|sale|sold|sell|kamai|bika/.test(t))a=`${P[2]}: sales ${fmt(sm(S,s=>s.a))}, profit ${fmt(sm(S,profit))}, from ${S.filter(s=>s.q>0&&s.p!=="Discount").length} sales.`;
+ else a="Try: “How much profit this month?”, “What does Shahgee owe?”, “Best selling item?”, “How many OG glass sold?”, “What is low in stock?”";
+ ans=[v,a]}
 function hijri(){try{return new Intl.DateTimeFormat("en-u-ca-islamic-umalqura",{day:"numeric",month:"long",year:"numeric"}).format(new Date())}catch(e){return new Date().toLocaleDateString()}}
 function topP(ss){const m={};ss.forEach(s=>{const k=s.p.toLowerCase();m[k]=(m[k]||0)+profit(s)});const l=Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,5);return l.length?l.map(x=>`<div class="row sp"><span>${esc(x[0])}</span><b class="pos">${fmt(x[1])}</b></div>`).join(""):"<span class='mute'>No sales yet this month.</span>"}
 let hf="All",ip=null;const TOPICS=["All",...new Set(Q.map(q=>q[2]))];
@@ -220,7 +238,7 @@ const T=[["chat","home","Home"],["ledger","book","Ledger"],["search","search","F
 function go(t){tab=t;render();scrollTo(0,0)}
 function render(){$("#nav").innerHTML=T.map(x=>`<button class="${tab===x[0]?"on":""}" onclick="go('${x[0]}')">${ic(x[1])}${x[2]}</button>`).join("");
  $("#bar").style.display=tab==="chat"?"block":"none";
- $("#v").innerHTML=({chat:vChat,ledger:vLedger,search:vSearch,reports:vReports,backup:vBackup,hikmah:vHikmah,stock:vStock})[tab]();
+ $("#v").innerHTML=({chat:vChat,ledger:vLedger,search:vSearch,reports:vReports,backup:vBackup,hikmah:vHikmah,stock:vStock,profile:vProfile})[tab]();
  const pr=[...new Set(db.sales.slice().reverse().map(s=>s.p))].slice(0,6),cu=names().slice(0,5);
  $("#chips").innerHTML=[...cu,...pr].map(x=>`<button onclick="$('#msg').value+=($('#msg').value?' ':'')+this.textContent;$('#msg').focus()">${esc(x)}</button>`).join("")}
 $("#go").onclick=addMsg;$("#msg").addEventListener("keydown",e=>{if(e.key==="Enter")addMsg()});
