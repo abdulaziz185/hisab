@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Hisab AI V6</title><meta name="theme-color" content="#121214"><meta name="description" content="Halal-minded sales and udhaar hisab"><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
+<title>Hisab AI V7</title><meta name="theme-color" content="#121214"><meta name="description" content="Halal-minded sales and udhaar hisab"><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
 <style>
 :root{--bg:#121214;--card:#1a1030;--card2:#261549;--ink:#f3ecff;--mute:#9d8fbd;--acc:#9b6bff;--gold:#e8c26b;--ok:#4fd1a1;--bad:#ff7a90;--line:#33214f;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -78,7 +78,7 @@ nav{height:calc(66px + env(safe-area-inset-bottom,0px));padding:6px 4px calc(6px
 <nav id="nav"></nav>
 <script>
 const $=s=>document.querySelector(s);
-const KEY="hisab3",DEF=()=>({sales:[],pays:[],costs:{},stock:{},margin:20,lastBackup:0,rev:0});
+const KEY="hisab3",DEF=()=>({sales:[],pays:[],costs:{},stock:{},margin:20,lastBackup:0,rev:0,goal:0,due:{}});
 let db=DEF(),lastId=0,pers=0,lastErr=0,wt=0;
 const uid=()=>{let i=Date.now();if(i<=lastId)i=lastId+1;return lastId=i};
 const nn=(x,d)=>Number.isFinite(+x)&&x!==null&&x!==""?+x:d;
@@ -87,7 +87,7 @@ function clean(o){const d=DEF();if(!o||typeof o!=="object")return d;if(o.data&&o
  d.pays=(Array.isArray(o.pays)?o.pays:[]).filter(x=>x&&Number.isFinite(+x.a)).map(x=>({...x,id:fix(x),t:nn(x.t,Date.now()),c:String(x.c||""),a:+x.a}));
  if(o.costs&&typeof o.costs==="object")for(const k in o.costs)if(Number.isFinite(+o.costs[k]))d.costs[k]=+o.costs[k];
  if(o.stock&&typeof o.stock==="object")for(const k in o.stock){const v=o.stock[k]||{};d.stock[k]={...v,q:nn(v.q,0)}}
- d.margin=nn(o.margin,20)||20;d.lastBackup=nn(o.lastBackup,0);d.rev=nn(o.rev,0);d.saved=nn(o.saved,0);if(typeof o.vl==="string")d.vl=o.vl;return d}
+ d.margin=nn(o.margin,20)||20;d.goal=nn(o.goal,0);if(o.due&&typeof o.due==="object")for(const k in o.due)if(Number.isFinite(+o.due[k]))d.due[k]=+o.due[k];d.lastBackup=nn(o.lastBackup,0);d.rev=nn(o.rev,0);d.saved=nn(o.saved,0);if(typeof o.vl==="string")d.vl=o.vl;return d}
 const idb=()=>new Promise((res,rej)=>{try{const r=indexedDB.open("hisab",1);r.onupgradeneeded=()=>{r.result.createObjectStore("kv");r.result.createObjectStore("snaps")};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}});
 const idbDo=(st,mode,fn)=>idb().then(d=>new Promise((res,rej)=>{const t=d.transaction(st,mode);let out;try{out=fn(t.objectStore(st))}catch(e){return rej(e)}t.oncomplete=()=>{d.close();res(out&&out.result!==undefined?out.result:out)};t.onerror=t.onabort=()=>rej(t.error)}));
 function prune(){return idbDo("snaps","readwrite",s=>{const r=s.getAllKeys();r.onsuccess=()=>{const k=r.result.map(String),dd=k.filter(x=>/^\d{4}-/.test(x)).sort(),pp=k.filter(x=>x[0]==="p").sort();dd.slice(0,-14).concat(pp.slice(0,-3)).forEach(x=>s.delete(x))};return r})}
@@ -161,7 +161,7 @@ function lev(a,b){const d=[...Array(b.length+1).keys()];for(let i=1;i<=a.length;
 const names=()=>[...new Set([...db.sales.map(s=>s.c),...db.pays.map(s=>s.c)].filter(Boolean))];
 function match(n){n=n[0].toUpperCase()+n.slice(1).toLowerCase();const f=names().find(x=>sameC(x,n)||(n.length>3&&lev(x.toLowerCase(),n.toLowerCase())<=1));return f||n}
 const unitCost=s=>s.cost!=null?s.cost:db.costs[s.p.toLowerCase()];
-const profit=s=>{const u=unitCost(s);return s.a-(u!=null?u*s.q:s.a*db.margin/100)};
+const profit=s=>{if(s.p==="Discount")return s.a;const u=unitCost(s);return u!=null?s.a-u*s.q:0};
 const bal=c=>db.sales.filter(s=>s.st==="u"&&sameC(s.c,c)).reduce((a,s)=>a+s.a,0)-db.pays.filter(p=>sameC(p.c,c)).reduce((a,p)=>a+p.a,0);
 function parse(raw){
  let t=raw.trim().replace(/,/g,"");if(!t)return null;
@@ -188,20 +188,21 @@ function addMsg(){const v=$("#msg").value;if(/^\s*stock\b/i.test(v))return addSt
  if(r.type==="pay"){db.pays.push({id:uid(),t:Date.now(),c:r.c,a:r.a});save();$("#msg").value="";pend=null;toast("Payment saved");return render()}
  pend=r;$("#msg").value="";render()}
 function savePend(){const p=pend,a=pendTotal(p);db.sales.push({id:uid(),t:Date.now(),c:p.c,p:p.p,q:p.q,a,cost:p.cost,st:p.st});const sk=db.stock[p.p.toLowerCase()];if(sk)sk.q=Math.max(0,sk.q-p.q);if(p.cost!=null)db.costs[p.p.toLowerCase()]=p.cost;pend=null;save();toast("Saved. Alhamdulillah");render()}
-function del(id){if(!confirm("Delete this entry?"))return;const sx=db.sales.find(x=>x.id===id),kx=sx&&db.stock[sx.p.toLowerCase()];if(kx)kx.q+=sx.q;db.sales=db.sales.filter(s=>s.id!==id);db.pays=db.pays.filter(s=>s.id!==id);save();render()}
+function del(id){const sx=db.sales.find(x=>x.id===id),px=db.pays.find(x=>x.id===id),e=sx||px;if(!e)return;const kx=sx&&db.stock[sx.p.toLowerCase()];if(kx)kx.q+=sx.q;db.sales=db.sales.filter(x=>x.id!==id);db.pays=db.pays.filter(x=>x.id!==id);save();render();undoToast(e,!!sx)}
+function undoToast(e,isS){const o=$("#ut");if(o)o.remove();const el=document.createElement("div");el.id="ut";el.className="toast";el.style.pointerEvents="auto";el.innerHTML='Deleted <b style="margin-left:12px;text-decoration:underline">Undo</b>';el.onclick=()=>{(isS?db.sales:db.pays).push(e);if(isS){const k=db.stock[e.p.toLowerCase()];if(k)k.q=Math.max(0,k.q-e.q)}save();render();el.remove();toast("Restored")};document.body.appendChild(el);setTimeout(()=>el.remove(),5000)}
 const today=()=>{const d=new Date();d.setHours(0,0,0,0);return+d};
 function entryHTML(e){const d=new Date(e.t).toLocaleDateString([],{day:"numeric",month:"short"}),pay=e.p===undefined,nm=pay?e.c:(e.c||"Cash sale"),sub=pay?"Payment received":e.p==="Discount"?"Discount":e.q<0?"Return, "+(-e.q)+" × "+e.p:e.q+" × "+e.p,amt=pay?"+"+fmt(e.a):fmt(e.a),st=pay?"Received":e.st==="u"?"Udhaar":"Paid",cl=pay||e.a<0?"pos":e.st==="u"?"neg":"";
  return`<div class="it"><div class="av ${pay||e.a<0?"g":e.st==="u"?"r":""}">${esc(nm[0].toUpperCase())}</div><div class="gr"><b>${esc(nm)}</b><div class="mute">${esc(sub)}, ${d}</div></div><div class="rt"><b class="${cl}">${amt}</b><div class="mute">${st}</div></div><button class="x" onclick="del(${e.id})">✕</button></div>`}
 function vChat(){const t=today(),ts=db.sales.filter(s=>s.t>=t),sale=ts.reduce((a,s)=>a+s.a,0),pf=ts.reduce((a,s)=>a+profit(s),0),rc=db.pays.filter(p=>p.t>=t).reduce((a,p)=>a+p.a,0),n=new Date(),ms=+new Date(n.getFullYear(),n.getMonth(),1),mp=db.sales.filter(s=>s.t>=ms).reduce((a,s)=>a+profit(s),0),out=names().reduce((a,c)=>a+Math.max(0,bal(c)),0);
  const q=Q[Math.floor(Date.now()/864e5)%Q.length],old=db.sales.length&&Date.now()-db.lastBackup>3*864e5,low=Object.entries(db.stock).filter(x=>x[1].q<=3),all=[...db.sales,...db.pays].sort((a,b)=>b.t-a.t).slice(0,10);
- let h=`<header class="top"><div class="av">H</div><div class="gr"><b>Assalamu alaikum</b><div class="mute">${hijri()}${n.getDay()===5?", Jumu’ah Mubarak":""}</div></div><button class="ib" onclick="go('backup')">${ic("save")}</button></header>
+ let h=`<header class="top"><div class="av">H</div><div class="gr"><b>Assalamu alaikum</b><div class="mute">${hijri()}${n.getDay()===5?", Jumu’ah Mubarak":""}</div></div><button class="ib" onclick="go('backup')">${ic("save")}</button></header>${motiv()}${recoverCard()}
  <div class="bal"><div class="mute">Profit this month</div><div class="big">${fmt(mp)}</div><span class="pill ${pf<0?"neg":""}">${pf<0?"":"+"}${fmt(pf)} today</span></div>
  <div class="acts"><button class="act" onclick="mic()"><i>${ic("mic")}</i>Voice</button><button class="act" onclick="go('stock')"><i>${ic("box")}</i>Stock</button><button class="act" onclick="go('search')"><i>${ic("search")}</i>Find</button><button class="act" onclick="closeDay()"><i>${ic("moon")}</i>Close day</button></div>
  <div class="card"><div class="row sp"><span class="mute">Sales today</span><b>${fmt(sale)}</b></div><div class="row sp" style="margin-top:6px"><span class="mute">Received today</span><b class="pos">${fmt(rc)}</b></div><div class="row sp" style="margin-top:6px"><span class="mute">Udhaar pending</span><b class="neg">${fmt(out)}</b></div></div>`;
  if(low.length)h+=`<div class="card" onclick="go('stock')"><b>Low stock</b><div class="mute">${low.map(x=>esc(x[0])+" ("+x[1].q+")").join(", ")}</div></div>`;
  if(old)h+=`<div class="card row sp"><span>Back up your hisab today.</span><button onclick="go('backup')">Open</button></div>`;
  if(ans)h+=`<div class="card moon"><div class="mute">${esc(ans[0])}</div><p style="margin:6px 0">${esc(ans[1])}</p><button onclick="ans=null;render()">Close</button></div>`;if(pend){const p=pend,a=pendTotal(p),k=p.p.toLowerCase(),u=p.cost!=null?p.cost:db.costs[k],pf2=a-(u!=null?u*p.q:a*db.margin/100),pr=db.sales.filter(s=>s.p.toLowerCase()===k),sk=db.stock[k];
-  h+=`<div class="card moon"><b>${p.q<0?"Return, check before saving":"Check before saving"}</b><p>${esc(p.c||"Cash sale")}, ${p.q} × ${esc(p.p)} = <b>${fmt(a)}</b>${p.disc?" after discount "+fmt(p.disc):""}<br>Profit about ${fmt(pf2)}${u==null?" (estimated at "+db.margin+"%)":""}</p>${pr.length?`<div class="mute">Last price ${fmt(pr[pr.length-1].a/pr[pr.length-1].q)}, average ${fmt(pr.reduce((x,s)=>x+s.a/s.q,0)/pr.length)} each</div>`:""}${u!=null&&a/p.q<u?`<div class="neg">Below your cost of ${fmt(u)} each</div>`:""}${sk&&sk.q<p.q?`<div class="neg">Only ${sk.q} in stock</div>`:""}
+  h+=`<div class="card moon"><b>${p.q<0?"Return, check before saving":"Check before saving"}</b><p>${esc(p.c||"Cash sale")}, ${p.q} × ${esc(p.p)} = <b>${fmt(a)}</b>${p.disc?" after discount "+fmt(p.disc):""}<br>${u==null?"Cost unknown, so no profit is counted. Add “cost 300” once.":"Profit about "+fmt(pf2)}</p>${pr.length?`<div class="mute">Last price ${fmt(pr[pr.length-1].a/pr[pr.length-1].q)}, average ${fmt(pr.reduce((x,s)=>x+s.a/s.q,0)/pr.length)} each</div>`:""}${u!=null&&a/p.q<u?`<div class="neg">Below your cost of ${fmt(u)} each</div>`:""}${sk&&sk.q<p.q?`<div class="neg">Only ${sk.q} in stock</div>`:""}
   <div class="row" style="flex-wrap:wrap;margin-top:8px"><button onclick="pend.each=!pend.each;render()">${p.each?"Price is each":"Price is total"}</button>${p.c?`<button onclick="pend.st=pend.st==='u'?'p':'u';render()">${p.st==="u"?"Udhaar":"Paid"}</button>`:""}<button class="p" onclick="savePend()">Save</button><button onclick="pend=null;render()">Cancel</button></div></div>`}
  h+=`<div class="card moon"><div class="ar">بِسْمِ ٱللَّٰهِ</div><p class="q">“${q[0]}”</p><div class="mute"><b>${q[1]}</b>, paraphrased</div><button style="margin-top:8px" onclick="go('hikmah')">More hikmah</button></div><h2>Recent</h2>`+(all.length?all.map(entryHTML).join(""):`<div class="card mute">Nothing yet. Try “Shahgee 2 OG glass 500”. Add “paid” or “cash” if money was received. “Shahgee paid 300” records a payment. “stock OG glass 50 cost 300” adds stock.</div>`);
  return h}
@@ -214,20 +215,27 @@ function vLedger(){const cs=names().map(c=>[c,bal(c)]).filter(x=>x[1]!==0).sort(
    <button style="margin-top:8px" onclick="copy('Assalamu alaikum ${esc(c)}, a gentle reminder that ${fmt(b)} is pending with us. Take your time, JazakAllah khair.','Reminder copied')">Copy gentle reminder</button> <button onclick="prof='${esc(c)}';go('profile')">Profile</button>`}
   h+=`</div>`});return h+"<h2>All customers</h2>"+(names().sort().map(c=>{const L=db.sales.filter(s=>sameC(s.c,c));return`<div class="it" onclick="prof='${esc(c)}';go('profile')"><div class="av">${esc(c[0])}</div><div class="gr"><b>${esc(c)}</b><div class="mute">${L.length} entries</div></div><div class="rt"><b>${fmt(L.reduce((a,x)=>a+x.a,0))}</b><div class="mute">total bought</div></div></div>`}).join("")||"<div class='card mute'>No customers yet.</div>")}
 function recv(c){const a=+$("#pa").value;if(!a)return toast("Enter an amount");db.pays.push({id:uid(),t:Date.now(),c,a});save();toast("Payment saved");render()}
-function vSearch(){return`<h1>Find a past sale</h1><div class="mute">Search a product or customer from all your old hisab.</div><input id="sq" placeholder="Type a product name" style="margin:10px 0" oninput="doSearch()"><div id="res"></div>`}
-function doSearch(){const q=$("#sq").value.trim().toLowerCase(),r=$("#res");if(!q){r.innerHTML="";return}
- const m=db.sales.filter(s=>s.p.toLowerCase().includes(q)||s.c.toLowerCase().includes(q)).sort((a,b)=>b.t-a.t);
- if(!m.length){r.innerHTML=`<div class="card mute">No match. Check the spelling or try fewer letters.</div>`;return}
- const u0=m.filter(s=>s.q>0&&s.p!=="Discount").map(s=>s.a/s.q),u=u0.length?u0:[0],avg=u.reduce((a,b)=>a+b,0)/u.length;
- r.innerHTML=`<div class="card moon"><b>${m.length} sales found</b><br>Last price: <b>${fmt(u[0])}</b> each · Average: <b>${fmt(avg)}</b> · Range: ${fmt(Math.min(...u))} to ${fmt(Math.max(...u))}</div>`+m.slice(0,30).map(entryHTML).join("")}
+let sf={d:"",u:0,r:0},lastSq="";
+function sfT(k,v){sf[k]=sf[k]===v?(k==="d"?"":0):v;render();doSearch()}
+function vSearch(){return`<h1>Find</h1><input id="sq" placeholder="Customer, item, amount, date…" value="${esc(lastSq)}" oninput="doSearch()" style="margin:10px 0"><div class="cc" style="max-height:none">${[["d","today","Today"],["d","week","This week"],["u",1,"Udhaar"],["r",1,"Returns"]].map(x=>`<button class="${sf[x[0]]===x[1]?"on":""}" onclick="sfT('${x[0]}',${typeof x[1]==="string"?"'"+x[1]+"'":x[1]})">${x[2]}</button>`).join("")}</div><div id="res"></div>`}
+function doSearch(){const raw=$("#sq").value.trim(),q=raw.toLowerCase(),tk=q.split(/\s+/).filter(Boolean),r=$("#res"),t0=today(),wk=t0-6*864e5;lastSq=raw;
+ if(!tk.length&&!sf.d&&!sf.u&&!sf.r){r.innerHTML=`<div class="card mute">Try “shah”, “glass”, “500” or tap a filter. Small spelling mistakes are fine.</div>`;return}
+ const hit=(t,k)=>{t=t.toLowerCase();return t.includes(k)||(k.length>3&&t.split(/\s+/).some(w=>lev(w,k)<=1))};
+ const m=[...db.sales,...db.pays].filter(e=>{const sale=e.p!==undefined;if(sf.d==="today"&&e.t<t0)return false;if(sf.d==="week"&&e.t<wk)return false;if(sf.u&&!(sale&&e.st==="u"))return false;if(sf.r&&!(sale&&(e.q<0||e.p==="Discount")))return false;
+  return tk.every(k=>hit((e.p||"payment")+" "+e.c,k)||String(Math.abs(Math.round(e.a))).includes(k)||new Date(e.t).toLocaleDateString().toLowerCase().includes(k))}).sort((a,b)=>b.t-a.t);
+ const cs=tk.length?names().filter(c=>tk.every(k=>hit(c,k))).slice(0,3):[];
+ const cc=cs.map(c=>`<div class="card moon"><b>${esc(c)}</b> · ${bal(c)>0?"owes <b>"+fmt(bal(c))+"</b>":"nothing pending"}</div>`).join("");
+ if(!m.length){r.innerHTML=cc+`<div class="card mute">No match. Try fewer letters or remove a filter.</div>`;return}
+ const u=m.filter(x=>x.p&&x.q>0&&x.p!=="Discount").map(x=>x.a/x.q),av=u.length?u.reduce((a,b)=>a+b,0)/u.length:0;
+ r.innerHTML=cc+`<div class="card moon"><b>${m.length} found</b>${u.length?`<br>Last price: <b>${fmt(u[0])}</b> each · Average: <b>${fmt(av)}</b> · Range: ${fmt(Math.min(...u))} to ${fmt(Math.max(...u))}`:""}</div>`+m.slice(0,40).map(entryHTML).join("")}
 function vReports(){const n=new Date(),dim=new Date(n.getFullYear(),n.getMonth()+1,0).getDate(),day=n.getDate(),ms=+new Date(n.getFullYear(),n.getMonth(),1);
  const ss=db.sales.filter(s=>s.t>=ms),pf=ss.reduce((a,s)=>a+profit(s),0),sl=ss.reduce((a,s)=>a+s.a,0),first=ss.length?Math.max(1,Math.floor((n-Math.min(...ss.map(s=>s.t)))/864e5)+1):day;
  const f=pf/Math.max(first,1)*dim,pr=f?Math.min(100,pf/f*100):0,days=Array(dim).fill(0);ss.forEach(s=>days[new Date(s.t).getDate()-1]+=profit(s));const mx=Math.max(1,...days);
  return`<h1>Reports</h1><div class="card moon"><svg viewBox="0 0 200 110" width="100%"><path d="M20 100A80 80 0 0 1 180 100" fill="none" stroke="var(--line)" stroke-width="14" stroke-linecap="round"/><path d="M20 100A80 80 0 0 1 180 100" fill="none" stroke="var(--acc)" stroke-width="14" stroke-linecap="round" pathLength="100" stroke-dasharray="${pr} 100"/><text x="100" y="82" text-anchor="middle" fill="var(--ink)" font-size="22" font-weight="800">${fmt(pf)}</text><text x="100" y="100" text-anchor="middle" fill="var(--mute)" font-size="10">profit this month</text></svg>
  <div class="row sp"><span>Expected by month end</span><b class="pos">${fmt(f)}</b></div><div class="mute">Based on ${ss.length?first+" days of sales":"no sales yet"}. It’s a guess, not a promise.</div></div>
- <div class="stats"><div class="card"><span class="mute">Sales</span><b>${fmt(sl)}</b></div><div class="card"><span class="mute">Entries</span><b>${ss.length}</b></div><div class="card"><span class="mute">Margin used</span><b>${db.margin}%</b></div></div>
+ <div class="stats"><div class="card"><span class="mute">Sales</span><b>${fmt(sl)}</b></div><div class="card"><span class="mute">Entries</span><b>${ss.length}</b></div><div class="card"><span class="mute">Cost missing</span><b>${ss.filter(x=>x.q>0&&unitCost(x)==null).length}</b></div></div>
  <h2>Profit by day</h2><div class="card"><div class="bars">${days.map(v=>`<i style="height:${v/mx*100}%"></i>`).join("")}</div><div class="row sp mute"><span>1</span><span>${dim}</span></div></div>
- <h2>Top products this month</h2><div class="card">${topP(ss)}</div><h2>Unknown cost margin</h2><div class="card"><div class="mute">Used when a product has no cost. Add “cost 300” to a sale and I’ll remember it.</div><input type="number" inputmode="numeric" value="${db.margin}" onchange="db.margin=+this.value||20;save();render()" style="margin-top:8px"></div>
+ <h2>Top products this month</h2><div class="card">${topP(ss)}</div>${costFix()}
  <div class="card moon"><b>Sadaqah idea</b><div class="mute">1% of this month’s profit would be ${fmt(Math.max(0,pf)/100)}. Optional, your intention counts.</div></div>`}
 function vBackup(){const d=db.lastBackup?Math.floor((Date.now()-db.lastBackup)/864e5)+" days ago":"never";
  return`<h1>Backup</h1><div class="card"><b>Last backup: ${d}</b><div class="mute">Your hisab lives on this phone. Copy a backup and keep it in WhatsApp saved messages or Notes.</div>
@@ -280,10 +288,10 @@ $("#go").onclick=addMsg;$("#msg").addEventListener("keydown",e=>{if(e.key==="Ent
 let qs=null,RC=[],RP=[];
 const recentC=()=>{const m={};[...db.sales,...db.pays].forEach(e=>{if(e.c)m[e.c]=Math.max(m[e.c]||0,e.t)});return Object.keys(m).sort((a,b)=>m[b]-m[a])};
 const recentP=()=>[...new Set(db.sales.slice().reverse().filter(s=>s.q>0&&s.p!=="Discount").map(s=>s.p))].slice(0,8);
-function openSale(m){qs={m,c:"",p:"",q:1,n:"",st:"u",disc:""};drawSheet()}
+function openSale(m){qs={m,c:"",p:"",q:1,n:"",st:"u",disc:"",cost:"",due:""};drawSheet()}
 function closeSheet(){qs=null;const e=$("#sheet");if(e)e.remove()}
 function pickC(c){qs.c=c;if(qs.p&&qs.m!=="pay"){const l=lastU(c,qs.p);if(l)qs.n=Math.round(l.u)}drawSheet()}
-function pickP(p){qs.p=p;const l=lastU(qs.c,p);if(l)qs.n=Math.round(l.u);drawSheet()}
+function pickP(p){qs.p=p;qs.cost=db.costs[p.toLowerCase()]||"";const l=lastU(qs.c,p);if(l)qs.n=Math.round(l.u);drawSheet()}
 function upd(){const e=$("#sum");if(!e)return;const c=qs.c.trim(),n=+qs.n||0;if(qs.m==="pay"){e.innerHTML=c&&n?`${esc(c)} will owe <b>${fmt(Math.max(0,bal(c)-n))}</b>`:"";return}
  const t=qs.q*n-(+qs.disc||0);e.innerHTML=n?`Total <b>${fmt(t)}</b>${c&&qs.st==="u"?` · ${esc(c)} will owe <b>${fmt(bal(c)+t)}</b>`:""}`:""}
 function drawSheet(){const pay=qs.m==="pay";RC=pay?recentC().filter(c=>bal(c)>0):recentC().slice(0,8);RP=recentP();
@@ -297,11 +305,24 @@ function drawSheet(){const pay=qs.m==="pay";RC=pay?recentC().filter(c=>bal(c)>0)
  <input id="qp" placeholder="Or type an item" value="${RP.some(x=>x.toLowerCase()===qs.p.toLowerCase())?"":esc(qs.p)}" oninput="qs.p=this.value;upd()">
  <div class="row3"><div class="step"><button onclick="qs.q=Math.max(1,qs.q-1);drawSheet()">−</button><b>${qs.q}</b><button onclick="qs.q++;drawSheet()">+</button></div><input id="qn" type="number" inputmode="decimal" placeholder="Price each" value="${qs.n}" oninput="qs.n=this.value;upd()"></div>
  ${last?`<div class="mute">Last price ${fmt(last.u)} each</div>`:""}
- <input type="number" inputmode="numeric" placeholder="Discount (optional)" value="${qs.disc}" oninput="qs.disc=this.value;upd()">
- <div class="seg"><button class="${qs.st==="u"?"on":""}" onclick="qs.st='u';drawSheet()">Udhaar</button><button class="${qs.st==="u"?"":"on"}" onclick="qs.st='p';drawSheet()">Paid</button></div>`)+
+ <div class="row3"><input type="number" inputmode="numeric" placeholder="Discount" value="${qs.disc}" oninput="qs.disc=this.value;upd()"><input type="number" inputmode="decimal" placeholder="Your cost each" value="${qs.cost}" oninput="qs.cost=this.value"></div>
+ <div class="seg"><button class="${qs.st==="u"?"on":""}" onclick="qs.st='u';drawSheet()">Udhaar</button><button class="${qs.st==="u"?"":"on"}" onclick="qs.st='p';drawSheet()">Paid</button></div>${qs.st==="u"?`<div class="lbl">Promised to pay by (optional)</div><input type="date" value="${qs.due}" onchange="qs.due=this.value">`:""}`)+
  `<div class="sum" id="sum"></div><button class="p lg" onclick="sheetSave()">${pay?"Save payment":"Save sale"}</button></div>`;upd()}
 function sheetSave(){let c=qs.c.trim();if(c)c=match(c);const n=+qs.n;
  if(qs.m==="pay"){if(!c||!n)return toast("Pick a customer and amount");db.pays.push({id:uid(),t:Date.now(),c,a:n});save();closeSheet();toast("Payment saved");return render()}
- if(!qs.p.trim()||!n)return toast("Pick an item and price");pend={c,p:qs.p.trim(),q:qs.q,n,each:true,cost:null,st:c&&qs.st==="u"?"u":"p",disc:+qs.disc||0};closeSheet();savePend();if(navigator.vibrate)navigator.vibrate(20)}
+ if(!qs.p.trim()||!n)return toast("Pick an item and price");pend={c,p:qs.p.trim(),q:qs.q,n,each:true,cost:+qs.cost>0?+qs.cost:null,st:c&&qs.st==="u"?"u":"p",disc:+qs.disc||0};if(c&&qs.st==="u"&&qs.due)db.due[c]=+new Date(qs.due+"T12:00");closeSheet();savePend();if(navigator.vibrate)navigator.vibrate(20)}
+let MC=[],DUE=[];
+function streak(){const ds=new Set(db.sales.map(x=>new Date(x.t).toDateString()));let n=0,d=new Date();if(!ds.has(d.toDateString()))d.setDate(d.getDate()-1);while(ds.has(d.toDateString())){n++;d.setDate(d.getDate()-1)}return n}
+function setGoal(){const v=prompt("Daily sales goal (Rs)",db.goal||"");if(v===null)return;db.goal=Math.max(0,+v||0);save();render()}
+function motiv(){const t=today(),sl=db.sales.filter(x=>x.t>=t&&x.q>0).reduce((a,x)=>a+x.a,0),g=db.goal||0,pc=g?Math.min(100,sl/g*100):0,sk=streak(),rec=db.pays.filter(x=>x.t>=t).reduce((a,x)=>a+x.a,0);
+ const prev=[1,2,3,4,5,6].map(i=>{const a=t-i*864e5;return db.sales.filter(x=>x.t>=a&&x.t<a+864e5&&x.q>0).reduce((y,x)=>y+x.a,0)}),best=sl>0&&prev.some(v=>v>0)&&sl>=Math.max(...prev);
+ const msg=!g?"Set a daily goal":pc>=100?"Goal reached. Alhamdulillah!":pc>=50?"Over halfway. Keep going":sl?"Good start. "+fmt(g-sl)+" to go":"New day. Bismillah, make the first sale";
+ return`<div class="card moon" onclick="setGoal()"><div class="row" style="gap:14px;align-items:center"><svg viewBox="0 0 44 44" width="84" height="84"><circle cx="22" cy="22" r="18" fill="none" stroke="var(--line)" stroke-width="5"/><circle cx="22" cy="22" r="18" fill="none" stroke="var(--acc)" stroke-width="5" stroke-linecap="round" pathLength="100" stroke-dasharray="${pc} 100" transform="rotate(-90 22 22)"/><text x="22" y="26" text-anchor="middle" fill="var(--ink)" font-size="10" font-weight="800">${Math.round(pc)}%</text></svg><div class="gr"><b>${msg}</b><div class="mute">${g?fmt(sl)+" of "+fmt(g)+" today":"Tap here to set your goal"}</div><div class="mute">🔥 ${sk} day streak${rec?" · "+fmt(rec)+" recovered":""}${best?" · Best day this week":""}</div></div></div></div>`}
+function overdue(){const n=Date.now();return names().filter(c=>bal(c)>0).map(c=>{const due=db.due[c],lp=Math.max(0,...db.pays.filter(x=>sameC(x.c,c)).map(x=>x.t)),fu=Math.min(...db.sales.filter(x=>x.st==="u"&&sameC(x.c,c)).map(x=>x.t)),days=Math.floor((n-(lp||fu))/864e5);return{c,b:bal(c),due,late:due?due<n:days>30,days}}).filter(x=>x.late).sort((a,b)=>b.b-a.b)}
+function recoverCard(){DUE=overdue().slice(0,3);if(!DUE.length)return"";return`<div class="card"><b>Recover today</b>${DUE.map((x,i)=>`<div class="row sp" style="margin:8px 0;gap:8px"><div class="gr"><b>${esc(x.c)}</b> ${fmt(x.b)}<div class="mute">${x.due?"promised "+new Date(x.due).toLocaleDateString():x.days+" days since last payment"}</div></div><button onclick="remind(${i})">Remind</button><button onclick="settle(${i})">Settled</button></div>`).join("")}</div>`}
+function remind(i){const x=DUE[i];open("https://wa.me/?text="+encodeURIComponent("Assalamu alaikum "+x.c+", your pending balance is Rs "+Math.round(x.b)+". Please pay when you can. JazakAllah khair."))}
+function settle(i){const x=DUE[i];if(!confirm("Mark "+x.c+"’s "+fmt(x.b)+" as paid?"))return;db.pays.push({id:uid(),t:Date.now(),c:x.c,a:x.b});delete db.due[x.c];save();toast("Settled");render()}
+function costFix(){MC=[...new Set(db.sales.filter(x=>x.q>0&&x.p!=="Discount"&&unitCost(x)==null).map(x=>x.p.toLowerCase()))].slice(0,10);return`<h2>Add missing costs</h2><div class="card">${MC.length?MC.map((k,i)=>`<div class="row sp" style="margin:6px 0;gap:10px"><span>${esc(k)}</span><input type="number" inputmode="decimal" placeholder="Cost each" style="width:120px" onchange="setCost(${i},this.value)"></div>`).join(""):'<div class="mute">Every item has a cost, so profit is exact.</div>'}</div>`}
+function setCost(i,v){if(+v>0){db.costs[MC[i]]=+v;save();render()}}
 render();
 </script></body></html>
