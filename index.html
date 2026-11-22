@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Hisab AI V13.2</title><meta name="theme-color" content="#121214"><meta name="description" content="Halal-minded sales and udhaar hisab"><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Hisab AI V13.5</title><meta name="theme-color" content="#121214"><meta name="description" content="Halal-minded sales and udhaar hisab"><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
 :root{--bg:#121214;--card:#1a1030;--card2:#261549;--ink:#f3ecff;--mute:#9d8fbd;--acc:#9b6bff;--gold:#e8c26b;--ok:#4fd1a1;--bad:#ff7a90;--line:#33214f;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -92,6 +92,7 @@ h1{font-size:34px;font-weight:700;letter-spacing:-.022em}.card{border-radius:14p
 nav,#bar{background:var(--glass)!important;-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border:.5px solid var(--line)}
 .av{color:#fff}@keyframes fi{from{opacity:0}}#sheet{animation:fi .2s}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.plist{display:flex;flex-direction:column;gap:6px}.plist button{display:flex;justify-content:space-between;align-items:center;text-align:left;padding:12px 14px;background:var(--card);border-radius:14px}
 </style></head><body>
 <main id="v"></main>
 <div id="bar"><div class="in"><div class="row" id="qa"></div><div class="chips" id="chips"></div><div class="row"><input id="msg" placeholder="Sale, payment, or ask a question" autocomplete="off"><button class="lg sq" onclick="mic()">🎤</button><button class="p lg sq" id="go">➤</button></div></div></div>
@@ -261,7 +262,7 @@ function vReports0(){const n=new Date(),dim=new Date(n.getFullYear(),n.getMonth(
 function vBackup(){const lb=lastBk(),d=lb?agoTxt(lb):"never";
  return`<h1>Backup</h1><div class="card"><b>Last backup: ${d}</b><div class="mute">Your hisab lives on this phone. Copy a backup and keep it in WhatsApp saved messages or Notes.</div>
  <div class="row" style="flex-wrap:wrap;margin-top:10px"><button class="p" onclick="bk()">Copy backup</button>${navigator.share?`<button onclick="bk(1)">Share backup</button>`:""}<button onclick="csv()">Copy as CSV</button><button onclick="db.vl=db.vl==='ur-PK'?'en-IN':'ur-PK';save();render()">Voice: ${db.vl==='ur-PK'?'Urdu':'English'}</button><button onclick="dl()">Save as file</button>${ip?`<button onclick="ip.prompt()">Install app</button>`:""}</div></div>
- ${cloudCard()}<div class="mute">Hisab AI V13.2</div><h2>Appearance</h2><div class="row" style="gap:8px"><button style="flex:1" onclick="togTheme()">Theme: ${gv("hisab-t","auto")}</button><button style="flex:1" onclick="togAcc()">Accent: ${gv("hisab-a","blue")}</button><button style="flex:1" onclick="togHP()">Profit: ${hideP()?"hidden":"shown"}</button></div><h2>AI helper</h2><div class="row" style="gap:8px"><button style="flex:1" onclick="togAI()">AI: ${aiOn()?"on":"off"}</button><button style="flex:1" onclick="togBig()">Large text: ${localStorage.getItem("hisab-big")?"on":"off"}</button><button style="flex:1" onclick="setVL()">Voice: ${esc(db.vl||"en-IN")}</button></div><div class="mute" style="margin:6px 0">When AI is on, your question and a summary of your records (names, balances, sales) are sent over the internet to Puter’s AI. Turn AI off to send nothing.</div><h2>App lock</h2><button class="lg" style="width:100%" onclick="setPin()">${localStorage.getItem(PK)?"Remove PIN":"Set a PIN"}</button><h2>Trash (kept 30 days)</h2>${trashHTML()}<h2>Automatic copies</h2><div class="card"><div class="mute">Saved on this phone: ${db.saved?new Date(db.saved).toLocaleString():"not yet"}. A copy is kept for each of the last 14 days.</div><div id="snaps"></div></div><h2>Restore</h2><div class="card"><textarea id="rs" placeholder="Paste your backup here"></textarea><button class="p" style="margin-top:8px" onclick="rst()">Restore from paste</button><input type="file" accept=".json" onchange="rfile(this)" style="margin-top:8px"><div class="mute">This replaces what is on this phone now.</div></div>`}
+ ${closeCard()}${cloudCard()}${tgCard()}<div class="mute">Hisab AI V13.5</div><h2>Appearance</h2><div class="row" style="gap:8px"><button style="flex:1" onclick="togTheme()">Theme: ${gv("hisab-t","auto")}</button><button style="flex:1" onclick="togAcc()">Accent: ${gv("hisab-a","blue")}</button><button style="flex:1" onclick="togHP()">Profit: ${hideP()?"hidden":"shown"}</button></div><h2>AI helper</h2><div class="row" style="gap:8px"><button style="flex:1" onclick="togAI()">AI: ${aiOn()?"on":"off"}</button><button style="flex:1" onclick="togBig()">Large text: ${localStorage.getItem("hisab-big")?"on":"off"}</button><button style="flex:1" onclick="setVL()">Voice: ${esc(db.vl||"en-IN")}</button></div><div class="mute" style="margin:6px 0">When AI is on, your question and a summary of your records (names, balances, sales) are sent over the internet to Puter’s AI. Turn AI off to send nothing.</div><h2>App lock</h2><button class="lg" style="width:100%" onclick="setPin()">${localStorage.getItem(PK)?"Remove PIN":"Set a PIN"}</button><h2>Trash (kept 30 days)</h2>${trashHTML()}<h2>Automatic copies</h2><div class="card"><div class="mute">Saved on this phone: ${db.saved?new Date(db.saved).toLocaleString():"not yet"}. A copy is kept for each of the last 14 days.</div><div id="snaps"></div></div><h2>Restore</h2><div class="card"><textarea id="rs" placeholder="Paste your backup here"></textarea><button class="p" style="margin-top:8px" onclick="rst()">Restore from paste</button><input type="file" accept=".json,.txt,text/plain,application/json" onchange="rfile(this)" style="margin-top:8px"><div class="mute">This replaces what is on this phone now.</div></div>`}
 function bk(s){db.lastBackup=Date.now();save();const t=JSON.stringify(db);if(s&&navigator.share)navigator.share({text:t}).catch(()=>{});else copy(t,"Backup copied");render()}
 function csv(){copy("Date,Customer,Product,Qty,Total,Status\n"+db.sales.map(s=>[new Date(s.t).toISOString().slice(0,10),s.c,s.p,s.q,s.a,s.st==="u"?"Udhaar":"Paid"].map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(",")).join("\n"),"CSV copied")}
 function rst(){try{const o=JSON.parse($("#rs").value),n=clean(o),src=o.data&&o.app?o.data:o;if(!Array.isArray(src.sales))throw 0;if(!confirm("Replace this phone’s hisab with the backup ("+n.sales.length+" sales, "+n.pays.length+" payments)? A copy of the current one is kept first."))return;idbDo("snaps","readwrite",k=>k.put(JSON.stringify(db),"pre-restore-"+Date.now())).catch(()=>{});n.rev=db.rev;db=n;save();toast("Restored");render()}catch(e){toast("That isn’t a valid backup")}}
@@ -298,7 +299,7 @@ addEventListener("beforeinstallprompt",e=>{e.preventDefault();ip=e;if(tab==="bac
 function dl(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(db)],{type:"application/json"}));a.download="hisab-backup-"+new Date().toISOString().slice(0,10)+".json";a.click();db.lastBackup=Date.now();save();render()}
 function rfile(i){const f=i.files[0];if(f)f.text().then(t=>{$("#rs").value=t;rst()})}
 
-/* ===== V13.2: time stamps, activity, cloud backup ===== */
+/* ===== V13.5: time stamps, activity, cloud backup ===== */
 const svT=e=>e.id>1.5e12&&e.id<Date.now()+864e5?e.id:e.t;
 const tmS=e=>new Date(svT(e)).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
 const agoTxt=t=>{const m=Math.floor((Date.now()-t)/6e4);return m<1?"just now":m<60?m+" min ago":m<1440?Math.floor(m/60)+" hr ago":Math.floor(m/1440)+" days ago"};
@@ -307,7 +308,7 @@ const ghc=()=>{try{return JSON.parse(localStorage.getItem(GK))||{}}catch(e){retu
 const ghs=()=>{try{return JSON.parse(localStorage.getItem(GS))||{}}catch(e){return{}}};
 const ghset=o=>{try{localStorage.setItem(GS,JSON.stringify({...ghs(),...o}))}catch(e){}};
 const lastBk=()=>Math.max(db.lastBackup||0,ghs().at||0);
-function logAct(m){try{const a=JSON.parse(localStorage.getItem(ACT)||"[]");a.unshift({t:Date.now(),m});localStorage.setItem(ACT,JSON.stringify(a.slice(0,80)))}catch(e){}}
+function logAct(m){try{const a=JSON.parse(localStorage.getItem(ACT)||"[]");a.unshift({t:Date.now(),m});localStorage.setItem(ACT,JSON.stringify(a.slice(0,200)))}catch(e){}}
 const b64=s=>{const u=new TextEncoder().encode(s);let b="";for(let i=0;i<u.length;i+=32768)b+=String.fromCharCode.apply(null,u.subarray(i,i+32768));return btoa(b)};
 const ghURL=c=>"https://api.github.com/repos/"+c.repo+"/contents/"+c.path.split("/").map(encodeURIComponent).join("/");
 const ghH=c=>({Authorization:"Bearer "+c.tok,Accept:"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28"});
@@ -353,50 +354,176 @@ function vAct(){
  const it=[...db.sales,...db.pays].map(e=>({t:svT(e),e}));
  let A=[];try{A=JSON.parse(localStorage.getItem(ACT)||"[]")}catch(e){}
  const cut=it.length?it.slice().sort((a,b)=>a.t-b.t)[Math.max(0,it.length-300)].t:0;
- const L=[...it.sort((a,b)=>b.t-a.t).slice(0,300),...A.filter(x=>x.t>=cut).map(x=>({t:x.t,m:x.m}))].sort((a,b)=>b.t-a.t);
+ const TR=(db.trash||[]).map(x=>({t:x.t,m:"Deleted "+(x.s?(x.e.q<0?"return":"sale")+", "+Math.abs(x.e.q)+" × "+x.e.p:"payment")+" · "+(x.e.c||"Cash")+" · "+fmt(x.e.a)})).filter(x=>x.t>=cut);
+ const L=[...it.sort((a,b)=>b.t-a.t).slice(0,300),...A.filter(x=>x.t>=cut).map(x=>({t:x.t,m:x.m})),...TR].sort((a,b)=>b.t-a.t);
  const dk=t=>{const d=new Date(t);d.setHours(0,0,0,0);const n=+d,td=today();return n===td?"Today":n===td-864e5?"Yesterday":d.toLocaleDateString([],{weekday:"short",day:"numeric",month:"short",year:"numeric"})};
  let h=`<div class="row"><button class="ib" onclick="go('chat')">‹</button><h1>Activity</h1></div><div class="mute" style="margin-bottom:8px">The time each entry was saved, newest first. Tap an entry to edit it.</div>`,last="";
  for(const x of L){const k=dk(x.t);if(k!==last){h+=`<h2>${k}</h2>`;last=k}
   const tm=new Date(x.t).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
-  if(x.m){h+=`<div class="it"><div class="gr"><b>${tm}</b><div class="mute">☁ ${esc(x.m)}</div></div></div>`;continue}
+  if(x.m){h+=`<div class="it"><div class="gr"><b>${tm}</b><div class="mute">${/^Backed|^Cloud|^Telegram|^WhatsApp|^Backup/.test(x.m)?"☁ ":/^Deleted/.test(x.m)?"🗑 ":"✎ "}${esc(x.m)}</div></div></div>`;continue}
   const e=x.e,pay=e.p===undefined,what=pay?"Payment received":e.p==="Discount"?"Discount":e.q<0?"Return, "+(-e.q)+" × "+e.p:"Sale, "+e.q+" × "+e.p,st=pay?"Received":e.st==="u"?"Udhaar":"Paid";
   h+=`<div class="it" onclick="editSheet(${e.id})"><div class="gr"><b>${tm} · ${esc(e.c||"Cash sale")}</b><div class="mute">${esc(what)} · ${st}</div></div><div class="rt"><b>${fmt(e.a)}</b></div></div>`}
  return h+(L.length?"":`<div class="card mute">Nothing yet.</div>`)}
 document.addEventListener("visibilitychange",()=>{if(document.hidden)return;const c=ghc(),s=ghs();if(c.tok&&Date.now()-(s.at||0)>(c.mins||5)*6e4)cloudPush()});
 addEventListener("online",()=>cloudPush());
 cloudSched();setTimeout(()=>cloudPush(),5000);
+
+/* ===== V13.5: closing reminder, WhatsApp file backup, Telegram, quick sell, edit log ===== */
+const CK="hisab-close",ymd=()=>new Date().toLocaleDateString("en-CA");
+const cls=()=>{try{return{on:1,time:"21:00",...JSON.parse(localStorage.getItem(CK)||"{}")}}catch(e){return{on:1,time:"21:00"}}};
+const clsSet=o=>{try{localStorage.setItem(CK,JSON.stringify({...cls(),...o}))}catch(e){}};
+const t12=t=>{const[h,m]=t.split(":").map(Number);return(h%12||12)+":"+String(m).padStart(2,"0")+(h<12?" AM":" PM")};
+async function shareBackup(){
+ const t=JSON.stringify(db),name="hisab-backup-"+ymd()+".txt";
+ try{const f=new File([t],name,{type:"text/plain"});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:"Hisab backup"});db.lastBackup=Date.now();save();logAct("WhatsApp/share backup sent");return true}}
+ catch(e){if(e&&e.name==="AbortError")return false}
+ const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([t],{type:"text/plain"}));a.download=name;a.click();db.lastBackup=Date.now();save();logAct("Backup file saved to phone");toast("Backup file saved to Downloads",3000);return true}
+function closeSums(){const t=today(),ts=db.sales.filter(s=>s.t>=t),sm=(l,f)=>l.reduce((a,x)=>a+f(x),0);
+ return{n:ts.length,sales:sm(ts,s=>s.a),profit:sm(ts,profit),ud:sm(ts.filter(s=>s.st==="u"),s=>s.a),rec:sm(db.pays.filter(p=>p.t>=t),p=>p.a)}}
+function closeSheetUI(){const o=$("#cl");if(o)o.remove();const z=closeSums(),d=document.createElement("div");d.id="cl";
+ d.style.cssText="position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.55);display:flex;align-items:flex-end";
+ d.innerHTML=`<div class="sh"><h2 style="margin:6px 0 0">Closing time</h2><div class="mute">Send today’s backup before you close.</div>
+ <div class="card"><div class="row sp"><span>Sales</span><b>${fmt(z.sales)}</b></div><div class="row sp"><span>Profit</span><b>${fmt(z.profit)}</b></div><div class="row sp"><span>New udhaar</span><b>${fmt(z.ud)}</b></div><div class="row sp"><span>Received</span><b>${fmt(z.rec)}</b></div></div>
+ <button class="lg" style="background:var(--acc);color:var(--onacc)" onclick="closeSend()">Send backup to WhatsApp</button>
+ <button onclick="closeDay()">Copy closing summary</button>
+ <div class="row" style="gap:8px"><button style="flex:1" onclick="closeLater()">Remind in 30 min</button><button style="flex:1" onclick="closeSkip()">Skip today</button></div></div>`;
+ document.body.appendChild(d)}
+async function closeSend(){const ok=await shareBackup();if(!ok)return;clsSet({done:ymd()});cloudPush(1);tgPush(1);const o=$("#cl");if(o)o.remove();toast("Backup sent",2500)}
+function closeLater(){clsSet({snooze:Date.now()+30*6e4});const o=$("#cl");if(o)o.remove()}
+function closeSkip(){clsSet({done:ymd()});const o=$("#cl");if(o)o.remove()}
+function closeCheck(){const c=cls();if(!c.on||$("#cl"))return;if(c.done===ymd())return;if(c.snooze&&Date.now()<c.snooze)return;
+ const[h,m]=c.time.split(":").map(Number),n=new Date();if(n.getHours()*60+n.getMinutes()<h*60+m)return;
+ if(db.lastBackup&&new Date(db.lastBackup).toLocaleDateString("en-CA")===ymd()&&db.lastBackup>new Date().setHours(h,m,0,0))return;
+ closeSheetUI()}
+function closeCard(){const c=cls();return`<h2>Closing reminder</h2><div class="card"><div class="row sp"><b>${c.on?"On, at "+t12(c.time):"Off"}</b><button onclick="clsSet({on:${c.on?0:1}});render()">${c.on?"Turn off":"Turn on"}</button></div><div class="mute" style="margin:6px 0">Every day at closing time the app asks you to send a backup to WhatsApp. It shows when the app is open.</div><div class="lbl">Closing time</div><input type="time" value="${c.time}" onchange="clsSet({time:this.value,done:'',snooze:0});render()"><button style="margin-top:8px" onclick="closeSheetUI()">Try it now</button></div>`}
+function closeDay(){closeSheetUI()}
+/* Telegram */
+const TK="hisab-tg",tgc=()=>{try{return JSON.parse(localStorage.getItem(TK))||{}}catch(e){return{}}},tgs=()=>{try{return JSON.parse(localStorage.getItem(TK+"-st"))||{}}catch(e){return{}}},tgset=o=>{try{localStorage.setItem(TK+"-st",JSON.stringify({...tgs(),...o}))}catch(e){}};
+let tgBusy=0;
+async function tgPush(force){const c=tgc();if(!c.tok||!c.chat||tgBusy)return;if(!navigator.onLine){if(force)toast("No internet right now",2500);return}
+ const st=tgs();if(!force&&st.rev===db.rev)return;tgBusy=1;
+ try{const rev=db.rev,fd=new FormData();fd.append("chat_id",c.chat);fd.append("caption","Hisab backup "+new Date().toLocaleString()+"\n"+db.sales.length+" sales, "+db.pays.length+" payments");
+  fd.append("document",new Blob([JSON.stringify(db)],{type:"text/plain"}),"hisab-backup-"+ymd()+".txt");
+  const r=await fetch("https://api.telegram.org/bot"+c.tok+"/sendDocument",{method:"POST",body:fd}),j=await r.json();
+  if(!j.ok)throw new Error(j.description||"Telegram error");tgset({rev,at:Date.now(),err:""});logAct("Telegram backup sent");if(force)toast("Sent to Telegram")}
+ catch(e){const m=e&&e.message&&!/fetch|network/i.test(e.message)?e.message:"Couldn’t reach Telegram";tgset({err:m});if(force)toast(m,3500)}
+ tgBusy=0;const el=$("#tgst");if(el)el.innerHTML=tgStat()}
+async function tgSetup(){const o=tgc();const t=prompt("Paste your Telegram bot token (from @BotFather). First open your bot and send it any message.",o.tok||"");if(t===null||!t.trim())return;
+ try{const r=await fetch("https://api.telegram.org/bot"+t.trim()+"/getUpdates"),j=await r.json();if(!j.ok)throw 0;
+  const u=[...j.result].reverse().find(x=>x.message&&x.message.chat);if(!u)return toast("Open your bot in Telegram, send it any message, then try again",4500);
+  try{localStorage.setItem(TK,JSON.stringify({tok:t.trim(),chat:String(u.message.chat.id)}))}catch(e){}tgset({rev:-1,err:""});render();tgPush(1)}
+ catch(e){toast("Token not accepted. Check it and try again",3500)}}
+function tgOff(){if(!confirm("Turn off Telegram backup?"))return;localStorage.removeItem(TK);localStorage.removeItem(TK+"-st");render()}
+function tgStat(){const s=tgs();return(s.at?"Last sent to Telegram: "+new Date(s.at).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})+" ("+agoTxt(s.at)+")":"Not sent to Telegram yet")+(s.err?"<br><span class=\"neg\">Problem: "+esc(s.err)+"</span>":"")}
+function tgCard(){const c=tgc();if(!(c.tok&&c.chat))return`<h2>Telegram backup</h2><div class="card"><b>Not set up</b><div class="mute" style="margin:6px 0">Sends a backup file to your own Telegram chat every 30 minutes when something changed. In Telegram, open @BotFather, send /newbot, then copy the token. Open your new bot and send it any message, then tap below.</div><button class="lg" style="background:var(--acc);color:var(--onacc)" onclick="tgSetup()">Set up Telegram</button></div>`;
+ return`<h2>Telegram backup</h2><div class="card"><b>On, every 30 min</b><div class="mute" id="tgst" style="margin:6px 0">${tgStat()}</div><div class="row" style="flex-wrap:wrap"><button onclick="tgPush(1)">Send now</button><button onclick="tgSetup()">Edit</button><button onclick="tgOff()">Turn off</button></div></div>`}
+/* quick sell row */
+let QP=[];
+function quickRow(){QP=allP().slice(0,6);if(!QP.length)return"";return`<div class="row sp" style="margin-top:8px"><b>Quick sell</b></div><div class="hs">${QP.map((p,i)=>`<button onclick="openSale('sale');pickP(QP[${i}])">${esc(p)}</button>`).join("")}</div>`}
+/* edit log */
+{const _e=edSave;edSave=function(){const b=new Map([...db.sales,...db.pays].map(x=>[x.id,JSON.stringify(x)]));const r=_e.apply(this,arguments);
+ for(const x of[...db.sales,...db.pays]){const o=b.get(x.id);if(o&&o!==JSON.stringify(x))logAct("Edited "+(x.p===undefined?"payment":x.p)+" · "+(x.c||"Cash")+" · "+fmt(x.a))}return r}}
+setInterval(closeCheck,6e4);setTimeout(closeCheck,3000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)closeCheck()});
+setInterval(()=>tgPush(),30*6e4);
+
+/* ===== V13.5: money page ===== */
+const pm=v=>hideP()?"••••":fmt(v),dS=d=>{const x=d?new Date(d):new Date();x.setHours(0,0,0,0);return+x};
+const inR=(l,a,b)=>l.filter(x=>x.t>=a&&x.t<b),sP=l=>l.reduce((a,x)=>a+profit(x),0),sA=l=>l.reduce((a,x)=>a+x.a,0);
+function mStats(a,b){const S=inR(db.sales,a,b),P=inR(db.pays,a,b),E=inR(db.exp,a,b),R=S.filter(x=>x.p!=="Discount");
+ return{S,R,sales:sA(S),profit:sP(S),exp:sA(E),E,ud:sA(S.filter(x=>x.st==="u")),paid:sA(S.filter(x=>x.st!=="u")),rec:sA(P),disc:Math.abs(sA(S.filter(x=>x.p==="Discount"))),ret:Math.abs(sA(R.filter(x=>x.q<0)))}}
+const CASHK="hisab-cash",MGK="hisab-mgoal";
+const cashGet=()=>{try{return JSON.parse(localStorage.getItem(CASHK))||{}}catch(e){return{}}};
+function cashExp(){const t=dS(),cin=sA(db.sales.filter(x=>x.t>=t&&x.st!=="u"))+sA(db.pays.filter(x=>x.t>=t)),ex=sA(db.exp.filter(x=>x.t>=t)),o=cashGet(),v=o[ymd()]||{},pv=o[new Date(Date.now()-864e5).toLocaleDateString("en-CA")]||{},op=v.open!=null?v.open:(pv.cnt!=null?pv.cnt:0);
+ return{op,cin,ex,exp:op+cin-ex,cnt:v.cnt,hasOpen:v.open!=null,pv:pv.cnt}}
+function cashSave(){const o=cashGet(),k=ymd(),v=o[k]||{},a=$("#co").value,b=$("#cn").value;v.open=a===""?null:+a;if(v.open===null)delete v.open;v.cnt=b===""?null:+b;if(v.cnt===null)delete v.cnt;o[k]=v;const n={};Object.keys(o).sort().slice(-14).forEach(x=>n[x]=o[x]);try{localStorage.setItem(CASHK,JSON.stringify(n))}catch(e){}cashUI()}
+function cashUI(){const e=$("#cdiff");if(!e)return;const c=cashExp();const d=c.cnt!=null?c.cnt-c.exp:null;
+ e.innerHTML=`<div class="row sp"><span class="mute">Cash in today</span><b>${fmt(c.cin)}</b></div><div class="row sp"><span class="mute">Expenses today</span><b>${fmt(c.ex)}</b></div><div class="row sp"><span class="mute">Should be in drawer</span><b>${fmt(c.exp)}</b></div>`+(d===null?`<div class="mute" style="margin-top:6px">Count your cash and type it above.</div>`:`<div class="row sp" style="margin-top:6px"><span>Difference</span><b class="${d===0?"pos":"neg"}">${d===0?"Matches":(d>0?"+":"−")+fmt(Math.abs(d))+(d>0?" extra":" missing")}</b></div>`)}
+function mGoalSet(){const v=prompt("Monthly net profit goal (Rs)",localStorage.getItem(MGK)||"");if(v===null)return;try{localStorage.setItem(MGK,String(Math.max(0,+v||0)))}catch(e){}render()}
+function group(l,kf,vf){const m={};l.forEach(x=>{const k=kf(x);if(!k)return;m[k]=(m[k]||0)+vf(x)});return Object.entries(m).sort((a,b)=>b[1]-a[1])}
+function moneyCard(){if(!db.sales.length)return"";const t0=dS(),p=sP(inR(db.sales,t0,t0+864e5)),y=sP(inR(db.sales,t0-864e5,t0)),d=p-y;
+ return`<div class="card" onclick="go('money')"><div class="row sp"><div><div class="mute">Today’s profit</div><b style="font-size:22px">${pm(p)}</b></div><div style="text-align:right"><div class="${d<0?"neg":"pos"}">${hideP()?"":(d<0?"▼ ":"▲ ")+fmt(Math.abs(d))}</div><div class="mute">yesterday ${pm(y)}</div></div></div></div>`}
+function vMoney(){
+ const n=new Date(),t0=dS(),ms=+new Date(n.getFullYear(),n.getMonth(),1),dn=n.getDate(),lms=+new Date(n.getFullYear(),n.getMonth()-1,1),lme=Math.min(lms+dn*864e5,ms);
+ const M=mStats(ms,Date.now()+1),L=mStats(lms,lme),tp=sP(inR(db.sales,t0,t0+864e5)),yp=sP(inR(db.sales,t0-864e5,t0)),net=M.profit-M.exp;
+ const c=cashExp(),o=cashGet()[ymd()]||{};
+ let h=`<div class="row"><button class="ib" onclick="go('chat')">‹</button><h1>Money</h1></div>`;
+ h+=`<div class="card"><div class="row sp"><div><div class="mute">Today’s profit</div><b style="font-size:26px">${pm(tp)}</b></div><div style="text-align:right"><div class="${tp<yp?"neg":"pos"}">${hideP()?"":(tp<yp?"▼ ":"▲ ")+fmt(Math.abs(tp-yp))}</div><div class="mute">yesterday ${pm(yp)}</div></div></div></div>`;
+ h+=`<h2>Cash drawer check</h2><div class="card"><div class="row" style="gap:8px"><div style="flex:1"><div class="lbl">Cash at opening</div><input id="co" type="number" inputmode="numeric" placeholder="${c.pv!=null?c.pv:"0"}" value="${o.open!=null?o.open:""}" oninput="cashSave()"></div><div style="flex:1"><div class="lbl">Cash counted now</div><input id="cn" type="number" inputmode="numeric" placeholder="Count it" value="${o.cnt!=null?o.cnt:""}" oninput="cashSave()"></div></div><div id="cdiff" style="margin-top:10px"></div><div class="mute" style="margin-top:6px">Paid sales and payments received count as cash. Wallet payments aren’t tracked separately.</div></div>`;
+ const days=[...Array(7)].map((_,i)=>{const a=t0-(6-i)*864e5;return{a,p:sP(inR(db.sales,a,a+864e5))}}),mx=Math.max(1,...days.map(d=>Math.abs(d.p)));
+ h+=`<h2>Last 7 days</h2><div class="card"><div style="display:flex;align-items:flex-end;gap:6px;height:110px">${days.map(d=>`<div style="flex:1;text-align:center"><div style="height:${Math.max(3,Math.abs(d.p)/mx*80)}px;background:${d.p<0?"var(--bad)":"var(--ok)"};border-radius:6px;margin-top:${80-Math.max(3,Math.abs(d.p)/mx*80)}px"></div><div class="mute" style="font-size:11px;margin-top:4px">${new Date(d.a).toLocaleDateString([],{weekday:"narrow"})}</div></div>`).join("")}</div><div class="row sp" style="margin-top:6px"><span class="mute">Week profit</span><b>${pm(days.reduce((a,d)=>a+d.p,0))}</b></div></div>`;
+ const row=(l,a,b,neg)=>`<div class="row sp" style="padding:5px 0"><span>${l}</span><span><b>${fmt(a)}</b> <span class="mute" style="margin-left:8px">${fmt(b)}</span></span></div>`;
+ h+=`<h2>This month vs last month</h2><div class="card"><div class="row sp mute" style="font-size:12px"><span></span><span>This month · last month (same days)</span></div>${row("Sales",M.sales,L.sales)}${hideP()?"":row("Profit",M.profit,L.profit)}${row("Expenses",M.exp,L.exp)}${hideP()?"":row("Net",net,L.profit-L.exp)}${row("Udhaar given",M.ud,L.ud)}${row("Received",M.rec,L.rec)}${row("Discounts",M.disc,L.disc)}${row("Returns",M.ret,L.ret)}</div>`;
+ const g=+localStorage.getItem(MGK)||0,gp=g?Math.max(0,Math.min(100,net/g*100)):0,gap=M.exp-M.profit;
+ h+=`<h2>Goal and break-even</h2><div class="card">${g?`<div class="row sp"><span>Net profit goal</span><b>${pm(net)} / ${fmt(g)}</b></div><div style="height:10px;background:var(--card2);border-radius:6px;margin:8px 0"><div style="height:10px;width:${gp}%;background:var(--ok);border-radius:6px"></div></div>`:`<div class="mute">No monthly goal yet.</div>`}<button style="margin:4px 0 8px" onclick="mGoalSet()">${g?"Change goal":"Set monthly goal"}</button><div class="row sp"><span class="mute">Expenses so far</span><b>${fmt(M.exp)}</b></div><div class="row sp"><span class="mute">Profit so far</span><b>${pm(M.profit)}</b></div><div class="${gap>0?"neg":"pos"}" style="margin-top:6px"><b>${hideP()?"":gap>0?"Need "+fmt(gap)+" more profit to cover expenses":"Expenses covered, "+fmt(-gap)+" ahead"}</b></div></div>`;
+ const tot=M.paid+M.ud||1;
+ h+=`<h2>Cash vs udhaar (this month)</h2><div class="card"><div style="display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--card2)"><div style="width:${Math.max(0,M.paid)/tot*100}%;background:var(--ok)"></div><div style="width:${Math.max(0,M.ud)/tot*100}%;background:var(--bad)"></div></div><div class="row sp" style="margin-top:8px"><span>Paid sales</span><b>${fmt(M.paid)}</b></div><div class="row sp"><span>Udhaar sales</span><b>${fmt(M.ud)}</b></div><div class="row sp"><span>Udhaar payments received</span><b>${fmt(M.rec)}</b></div></div>`;
+ const ex=group(M.E,x=>x.k,x=>x.a);
+ h+=`<h2>Expenses this month</h2><div class="card">${ex.length?ex.map(e=>`<div class="row sp"><span>${esc(e[0])}</span><b>${fmt(e[1])}</b></div>`).join(""):`<div class="mute">No expenses saved this month.</div>`}</div>`;
+ if(!hideP()){
+  const it=group(M.R.filter(x=>x.q>0),x=>x.p.toLowerCase(),x=>profit(x)).slice(0,8),cu=group(M.R.filter(x=>x.q>0),x=>x.c,x=>profit(x)).slice(0,8);
+  const nm=k=>{const f=db.sales.find(x=>x.p&&x.p.toLowerCase()===k);return f?f.p:k};
+  h+=`<h2>Profit per item (this month)</h2><div class="card">${it.length?it.map(e=>`<div class="row sp"><span>${esc(nm(e[0]))}</span><b>${fmt(e[1])}</b></div>`).join(""):`<div class="mute">No sales yet.</div>`}</div>`;
+  h+=`<h2>Profit per customer (this month)</h2><div class="card">${cu.length?cu.map(e=>`<div class="row sp"><span>${esc(e[0])}</span><b>${fmt(e[1])}</b></div>`).join(""):`<div class="mute">No named customers yet.</div>`}</div>`}
+ const R90=db.sales.filter(x=>x.t>Date.now()-90*864e5&&x.q>0&&x.p!=="Discount"),hr=group(R90,x=>String(new Date(x.t).getHours()),x=>x.a).slice(0,3),wd=group(R90,x=>String(new Date(x.t).getDay()),x=>x.a),W=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],hl=k=>{k=+k;return t12(String(k).padStart(2,"0")+":00")+" – "+t12(String((k+1)%24).padStart(2,"0")+":00")};
+ h+=`<h2>Best times (last 90 days)</h2><div class="card">${hr.length?`<div class="mute">Best hours</div>`+hr.map(e=>`<div class="row sp"><span>${hl(e[0])}</span><b>${fmt(e[1])}</b></div>`).join("")+`<div class="mute" style="margin-top:8px">Best day</div><div class="row sp"><span>${W[+wd[0][0]]}</span><b>${fmt(wd[0][1])}</b></div>`+(wd.length>1?`<div class="row sp"><span class="mute">Slowest: ${W[+wd[wd.length-1][0]]}</span><span class="mute">${fmt(wd[wd.length-1][1])}</span></div>`:""):`<div class="mute">Not enough sales yet.</div>`}</div>`;
+ h+=`<button class="lg" style="background:var(--acc);color:var(--onacc);margin-top:12px;width:100%" onclick="monthImg()">Share this month’s report image</button>`;
+ setTimeout(cashUI,0);return h}
+async function monthImg(){const n=new Date(),ms=+new Date(n.getFullYear(),n.getMonth(),1),m=mStats(ms,Date.now()+1),c=document.createElement("canvas");c.width=1080;c.height=1350;const g=c.getContext("2d");
+ g.fillStyle="#0b0b0f";g.fillRect(0,0,1080,1350);g.fillStyle="#fff";g.font="bold 64px sans-serif";g.fillText("Hisab report",70,130);g.font="38px sans-serif";g.fillStyle="#9a9aa6";g.fillText(n.toLocaleDateString([],{month:"long",year:"numeric"})+" (so far)",70,190);
+ const rows=[["Sales",m.sales],["Profit",m.profit],["Expenses",m.exp],["Net profit",m.profit-m.exp],["Udhaar given",m.ud],["Received",m.rec],["Discounts",m.disc],["Returns",m.ret]];let y=290;
+ rows.forEach(r=>{g.fillStyle="#9a9aa6";g.font="38px sans-serif";g.textAlign="left";g.fillText(r[0],70,y);g.fillStyle="#fff";g.font="bold 44px sans-serif";g.textAlign="right";g.fillText(fmt(r[1]),1010,y);y+=92});
+ g.textAlign="left";g.fillStyle="#9a9aa6";g.font="38px sans-serif";g.fillText("Top items by profit",70,y+50);y+=110;
+ group(m.R.filter(x=>x.q>0),x=>x.p,x=>profit(x)).slice(0,3).forEach(e=>{g.fillStyle="#fff";g.font="40px sans-serif";g.textAlign="left";g.fillText(e[0].slice(0,24),70,y);g.font="bold 40px sans-serif";g.textAlign="right";g.fillText(fmt(e[1]),1010,y);y+=76});
+ const b=await new Promise(r=>c.toBlob(r,"image/png")),f=new File([b],"hisab-report-"+ymd().slice(0,7)+".png",{type:"image/png"});
+ try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});return}}catch(e){if(e&&e.name==="AbortError")return}
+ const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=f.name;a.click();toast("Report image saved",2500)}
+function vReports(){return`<button class="lg" style="width:100%;margin-bottom:8px" onclick="go('money')">Money details: cash check, weekly, month compare</button>`+askBtn(TOOLS[0][1]+" Also explain why profit is up or down compared to before.","Explain my numbers")+vReports0()}
 if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 const T=[["chat","home","Home"],["ledger","book","Ledger"],["search","search","Find"],["reports","chart","Reports"],["hikmah","moon","Hikmah"]];
 function go(t){tab=t;render();scrollTo(0,0)}
 function render(){$("#nav").innerHTML=T.map(x=>`<button class="${tab===x[0]?"on":""}" onclick="go('${x[0]}')">${ic(x[1])}${x[2]}</button>`).join("");
  $("#bar").style.display=tab==="chat"?"block":"none";document.body.style.paddingBottom=tab==="chat"?"190px":"110px";$("#qa").innerHTML=`<button class="p lg" style="flex:1" onclick="openSale('sale')">+ Sale</button><button class="lg" style="flex:1" onclick="openSale('pay')">Payment in</button><button class="lg sq" onclick="mic()">${ic("mic")}</button><button class="lg sq" onclick="openScan()">📷</button>`;
- $("#v").innerHTML=({chat:vChat,ledger:vLedger,search:vSearch,reports:vReports,backup:vBackup,hikmah:vHikmah,stock:vStock,profile:vProfile,all:vAll,act:vAct})[tab]();
+ $("#v").innerHTML=({chat:vChat,ledger:vLedger,search:vSearch,reports:vReports,backup:vBackup,hikmah:vHikmah,stock:vStock,profile:vProfile,all:vAll,act:vAct,money:vMoney})[tab]();
  const pr=[...new Set(db.sales.slice().reverse().map(s=>s.p))].slice(0,6),cu=names().slice(0,5);
  $("#chips").innerHTML=[...cu,...pr].map(x=>`<button onclick="$('#msg').value+=($('#msg').value?' ':'')+this.textContent;$('#msg').focus()">${esc(x)}</button>`).join("");if(tab==="backup")snapUI();if(tab==="search")doSearch();countUp()}
 $("#go").onclick=addMsg;$("#msg").addEventListener("keydown",e=>{if(e.key==="Enter")addMsg()});
 let qs=null,RC=[],RP=[];
 const recentC=()=>{const m={};[...db.sales,...db.pays].forEach(e=>{if(e.c)m[e.c]=Math.max(m[e.c]||0,e.t)});return Object.keys(m).sort((a,b)=>m[b]-m[a])};
 const recentP=()=>[...new Set(db.sales.slice().reverse().filter(s=>s.q>0&&s.p!=="Discount").map(s=>s.p))].slice(0,8);
-function openSale(m){qs={m,c:"",p:"",q:1,n:"",st:"u",disc:"",cost:"",due:"",cart:[],part:""};drawSheet()}
+function openSale(m){qs={more:0,pk:0,m,c:"",p:"",q:1,n:"",st:"u",disc:"",cost:"",due:"",cart:[],part:""};drawSheet()}
 function closeSheet(){qs=null;stopCam();const e=$("#sheet");if(e)e.remove()}
 function pickC(c){qs.c=c;if(qs.p&&qs.m!=="pay"){const l=lastU(c,qs.p);if(l)qs.n=Math.round(l.u)}drawSheet()}
-function pickP(p){qs.p=p;qs.cost=db.costs[p.toLowerCase()]||"";const l=lastU(qs.c,p);if(l)qs.n=Math.round(l.u);else if(db.sell[p.toLowerCase()])qs.n=db.sell[p.toLowerCase()];drawSheet()}
+function pickP(p){qs.p=p;qs.pk=1;qs.cost=db.costs[p.toLowerCase()]||"";const l=lastU(qs.c,p);if(l)qs.n=Math.round(l.u);else if(db.sell[p.toLowerCase()])qs.n=db.sell[p.toLowerCase()];drawSheet()}
 function upd(){const e=$("#sum");if(!e)return;const c=qs.c.trim(),n=+qs.n||0;if(qs.m==="pay"){e.innerHTML=c&&n?`${esc(c)} will owe <b>${fmt(Math.max(0,bal(c)-n))}</b>`:"";return}
  const ct=(qs.cart||[]).reduce((a,x)=>a+x.q*x.n-x.d,0),t=ct+(n?qs.q*n-(+qs.disc||0):0);e.innerHTML=(n||ct)?`Total <b>${fmt(t)}</b>${c&&qs.st==="u"?` · ${esc(c)} will owe <b>${fmt(bal(c)+t)}</b>${(db.cinfo[c]||{}).lim&&bal(c)+t>db.cinfo[c].lim?" ⚠ over limit":""}`:""}`:""}
 function drawSheet(){const pay=qs.m==="pay";RC=pay?recentC().filter(c=>bal(c)>0):recentC().slice(0,8);RP=recentP();
  let e=$("#sheet");if(!e){e=document.createElement("div");e.id="sheet";e.onclick=ev=>{if(ev.target===e)closeSheet()};document.body.appendChild(e)}if(qs.m==="buy"||qs.m==="exp")return drawSheet2();
  const known=RC.some(x=>sameC(x,qs.c)),last=qs.c&&qs.p&&lastU(qs.c,qs.p);
  e.innerHTML=`<div class="sh"><div class="grab"></div><div class="seg"><button class="${pay?"":"on"}" onclick="qs.m='sale';drawSheet()">Sale</button><button class="${pay?"on":""}" onclick="qs.m='pay';drawSheet()">Payment</button><button onclick="qs.m='buy';drawSheet()">Stock in</button><button onclick="qs.m='exp';drawSheet()">Expense</button></div>
- <div class="lbl">Customer</div><div class="cc">${pay?"":`<button class="${qs.c?"":"on"}" onclick="pickC('')">Cash sale</button>`}${RC.map((c,i)=>`<button class="${qs.c&&sameC(qs.c,c)?"on":""}" onclick="pickC(RC[${i}])">${esc(c)}${pay?" · "+fmt(bal(c)):""}</button>`).join("")}</div>
- <input id="qc" placeholder="Or type a new name" value="${known?"":esc(qs.c)}" oninput="qs.c=this.value;upd()">`+(pay?
+ <div class="lbl">Customer</div><input id="qc" placeholder="Search or type customer name" value="${esc(qs.c)}" autocomplete="off" oninput="qs.c=this.value;cSug();upd()"><div class="hs" id="csug"></div>`+(pay?
  `<div class="lbl">Amount received</div><input id="qn" type="number" inputmode="decimal" placeholder="Amount" value="${qs.n}" oninput="qs.n=this.value;upd()">${qs.c&&bal(qs.c)>0?`<button onclick="qs.n=Math.round(bal('${esc(qs.c)}'));drawSheet()">Full amount ${fmt(bal(qs.c))}</button>`:""}`:
- `<div class="lbl">Item</div><div class="cc">${RP.map((p,i)=>`<button class="${qs.p.toLowerCase()===p.toLowerCase()?"on":""}" onclick="pickP(RP[${i}])">${esc(p)}</button>`).join("")}</div>
- <input id="qp" placeholder="Or type an item" value="${RP.some(x=>x.toLowerCase()===qs.p.toLowerCase())?"":esc(qs.p)}" oninput="qs.p=this.value;upd()">
+ `<div class="lbl">Item</div><input id="qp" placeholder="Search saved items or type a new one" value="${esc(qs.p)}" autocomplete="off" oninput="qs.p=this.value;qs.pk=0;pSug();upd()"><div id="psug"></div>
  <div class="row3"><div class="step"><button onclick="qs.q=Math.max(1,qs.q-1);drawSheet()">−</button><b>${qs.q}</b><button onclick="qs.q++;drawSheet()">+</button></div><div><div class="lbl">Price each</div><input id="qn" type="number" inputmode="decimal" placeholder="Price" value="${qs.n}" oninput="qs.n=this.value;upd()"></div></div>
  ${last?`<div class="mute">Last price ${fmt(last.u)} each</div>`:""}
- <div class="row3"><div><div class="lbl">Discount</div><input type="number" inputmode="numeric" placeholder="0" value="${qs.disc}" oninput="qs.disc=this.value;upd()"></div><div><div class="lbl">Your cost each</div><input type="number" inputmode="decimal" placeholder="Optional" value="${qs.cost}" oninput="qs.cost=this.value"></div></div>
- <div class="seg"><button class="${qs.st==="u"?"on":""}" onclick="qs.st='u';drawSheet()">Udhaar</button><button class="${qs.st==="u"?"":"on"}" onclick="qs.st='p';drawSheet()">Paid</button></div>${qs.st==="u"?`<div class="lbl">Paid now (optional)</div><input type="number" inputmode="decimal" placeholder="0" value="${qs.part||""}" oninput="qs.part=this.value"><div class="lbl">Promised to pay by (optional)</div><input type="date" value="${qs.due}" onchange="qs.due=this.value">`:""}`)+
- `${pay?"":cartHTML()}<div class="sum" id="sum"></div>${pay?"":'<button class="lg" onclick="cartAdd()">+ Add to bill</button>'}<button class="p lg" onclick="sheetSave()">${pay?"Save payment":(qs.cart&&qs.cart.length?"Save bill":"Save sale")}</button></div>`;upd()}
+ <div class="seg"><button class="${qs.st==="u"?"on":""}" onclick="qs.st='u';drawSheet()">Udhaar</button><button class="${qs.st==="u"?"":"on"}" onclick="qs.st='p';drawSheet()">Paid</button></div>${qs.more||qs.disc||qs.part||qs.due?`<div class="row3"><div><div class="lbl">Discount</div><input type="number" inputmode="numeric" placeholder="0" value="${qs.disc}" oninput="qs.disc=this.value;upd()"></div><div><div class="lbl">Your cost each</div><input type="number" inputmode="decimal" placeholder="Optional" value="${qs.cost}" oninput="qs.cost=this.value"></div></div>${qs.st==="u"?`<div class="lbl">Paid now (optional)</div><input type="number" inputmode="decimal" placeholder="0" value="${qs.part||""}" oninput="qs.part=this.value"><div class="lbl">Promised to pay by (optional)</div><input type="date" value="${qs.due}" onchange="qs.due=this.value">`:""}`:`<button class="lg" onclick="qs.more=1;drawSheet()">+ Discount, cost, part payment</button>`}`)+
+ `${pay?"":cartHTML()}<div class="sum" id="sum"></div>${pay?"":'<button class="lg" onclick="cartAdd()">+ Add to bill</button>'}<button class="p lg" onclick="sheetSave()">${pay?"Save payment":(qs.cart&&qs.cart.length?"Save bill":"Save sale")}</button></div>`;upd();cSug();pSug()}
+let CL=[],PL=[];
+function allP(){const m=new Map(),add=(n,w)=>{n=(n||"").trim();const k=n.toLowerCase();if(!k||k==="discount")return;const o=m.get(k);o?o.w+=w:m.set(k,{n,w})};
+ const rc=Date.now()-30*864e5;db.sales.forEach(x=>{if(x.q>0)add(x.p,x.t>rc?3:1)});Object.keys(db.stock||{}).forEach(k=>add(k,1));Object.keys(db.sell||{}).forEach(k=>add(k,1));Object.keys(db.costs||{}).forEach(k=>add(k,1));
+ return[...m.values()].sort((a,b)=>b.w-a.w).map(x=>x.n)}
+function cSug(){const e=$("#csug");if(!e||!qs)return;const pay=qs.m==="pay",q=(qs.c||"").trim().toLowerCase();
+ let L=q?recentC().filter(c=>q.split(/\s+/).every(t=>c.toLowerCase().includes(t))):recentC().filter(c=>!pay||bal(c)>0).slice(0,8);
+ L=L.slice(0,8);CL=L;
+ e.innerHTML=(pay||q?"":`<button class="${qs.c?"":"on"}" onclick="pickC('')">Cash sale</button>`)+L.map((c,i)=>`<button class="${qs.c&&sameC(qs.c,c)?"on":""}" onclick="pickC(CL[${i}])">${esc(c)}${pay?" · "+fmt(bal(c)):""}</button>`).join("")+(q&&!L.length?`<span class="mute">New customer: ${esc(qs.c.trim())}</span>`:"")}
+function pSug(){const e=$("#psug");if(!e||!qs)return;const q=(qs.p||"").trim().toLowerCase();
+ if(!q){PL=allP().slice(0,8);e.className="hs";e.innerHTML=PL.map((p,i)=>`<button onclick="pickP(PL[${i}])">${esc(p)}</button>`).join("");return}
+ const w=q.split(/\s+/);let L=allP().filter(n=>w.every(t=>n.toLowerCase().includes(t)));
+ L.sort((a,b)=>(b.toLowerCase().startsWith(q)?1:0)-(a.toLowerCase().startsWith(q)?1:0));PL=L.slice(0,6);
+ e.className="plist";
+ if(qs.pk&&L.some(n=>n.toLowerCase()===q)){e.innerHTML="";return}
+ e.innerHTML=PL.length?PL.map((p,i)=>{const pr=db.sell&&db.sell[p.toLowerCase()];return`<button onclick="pickP(PL[${i}])"><span>${esc(p)}</span><span class="mute">${pr?fmt(pr):""}</span></button>`}).join(""):`<div class="mute">New item. Add the price below.</div>`}
 function sheetSave(){let c=qs.c.trim();if(c)c=match(c);const n=+qs.n;
  if(qs.m==="pay"){if(!c||!n)return toast("Pick a customer and amount");db.pays.push({id:uid(),t:Date.now(),c,a:n});save();closeSheet();toast("Payment saved");return render()}
  const L=(qs.cart||[]).slice();if(qs.p.trim()&&n)L.push({p:qs.p.trim(),q:qs.q,n,d:+qs.disc||0,cost:+qs.cost>0?+qs.cost:null});if(!L.length)return toast("Pick an item and price");
@@ -522,7 +649,7 @@ const act=(i,l,f)=>`<button class="act" onclick="${f}"><span class="cir">${i}</s
 function aiRow(){return aiOn()?`<div class="hs">${TOOLS.slice(0,9).map((t,i)=>`<button onclick="tool(${i})">✨ ${t[0]}</button>`).join("")}<button onclick="go('backup')">More…</button></div>`:""}
 function custList(){CH=names().filter(c=>bal(c)>0).sort((a,b)=>bal(b)-bal(a)).slice(0,5);if(!CH.length)return"";return`<div class="row sp"><b>Customers</b><span class="mute" onclick="go('ledger')">See all</span></div>`+CH.map((c,i)=>{const dd=db.due[c],late=dd&&dd<Date.now();return`<div class="tk" onclick="openCust(CH[${i}])">${av(c)}<div class="gr"><b>${esc(c)}</b><div class="mute">owes you</div></div><div class="rt"><b>${fmt(bal(c))}</b><div class="${late?"neg":"mute"}">${dd?(late?"overdue":"due "+new Date(dd).toLocaleDateString(undefined,{day:"numeric",month:"short"})):""}</div></div></div>`}).join("")}
 function activity(){const L=[...db.sales,...db.pays].sort((a,b)=>b.t-a.t).slice(0,8);if(!L.length)return`<div class="card mute">No entries yet. Tap Sell, or type below.</div>`;return`<div class="row sp" style="margin-top:8px"><b>Activity</b><span class="mute" onclick="go('act')">See all</span></div>`+L.map(e=>{const pay=e.p===undefined,ret=!pay&&e.q<0,dis=e.p==="Discount",i=pay?"↙":ret?"↩":dis?"％":"↗",t=pay?"Payment":dis?"Discount":(ret?"Return ":"")+Math.abs(e.q)+" × "+esc(e.p);return`<div class="tk" onclick="editSheet(${e.id})"><div class="av ${pay||ret||dis?"gn":""}">${i}</div><div class="gr"><b>${t}</b><div class="mute">${esc(e.c||"Cash")} · ${new Date(e.t).toLocaleDateString(undefined,{day:"numeric",month:"short"})}, ${tmS(e)}${e.st==="u"?" · udhaar":""}</div></div><div class="rt"><b class="${pay||e.a<0?"pos":""}">${pay?"+":""}${fmt(e.a)}</b></div></div>`}).join("")}
-function vChat(){const h=new Date().getHours();return`<div class="row sp" style="margin-top:4px"><div class="row" style="gap:10px;align-items:center"><div class="av" style="background:var(--acc);color:var(--onacc)">H</div><div><b>Hisab AI</b><div class="mute">${h<12?"Good morning":h<17?"Good afternoon":"Good evening"}</div></div></div><div class="row" style="gap:6px"><button class="ib" onclick="go('search')">🔍</button><button class="ib" onclick="go('act')">🕒</button><button class="ib" onclick="go('backup')">⚙</button></div></div>${hero()}<div class="acts">${act("＋","Sell","openSale('sale')")}${act("↓","Got paid","openSale('pay')")}${act("▦","Stock","go('stock')")}${act("📷","Scan","openScan()")}</div>${aiRow()}${motiv()}${recoverCard()}${custList()}${activity()}<div class="hs" style="margin-top:10px"><button onclick="closeDay()">Close day</button><button onclick="go('reports')">Reports</button><button onclick="go('hikmah')">Hikmah</button></div>`}
+function vChat(){const h=new Date().getHours();return`<div class="row sp" style="margin-top:4px"><div class="row" style="gap:10px;align-items:center"><div class="av" style="background:var(--acc);color:var(--onacc)">H</div><div><b>Hisab AI</b><div class="mute">${h<12?"Good morning":h<17?"Good afternoon":"Good evening"}</div></div></div><div class="row" style="gap:6px"><button class="ib" onclick="go('search')">🔍</button><button class="ib" onclick="go('act')">🕒</button><button class="ib" onclick="go('backup')">⚙</button></div></div>${hero()}<div class="acts">${act("＋","Sell","openSale('sale')")}${act("↓","Got paid","openSale('pay')")}${act("▦","Stock","go('stock')")}${act("📷","Scan","openScan()")}</div>${aiRow()}${motiv()}${recoverCard()}${moneyCard()}${quickRow()}${custList()}${activity()}<div class="hs" style="margin-top:10px"><button onclick="closeDay()">Close day</button><button onclick="go('reports')">Reports</button><button onclick="go('hikmah')">Hikmah</button></div>`}
 const gv=(k,d)=>localStorage.getItem(k)||d,hideP=()=>localStorage.getItem("hisab-hp")==="1";
 function applyTheme(){const r=document.documentElement,t=gv("hisab-t","auto");t==="auto"?r.removeAttribute("data-t"):r.setAttribute("data-t",t);r.setAttribute("data-a",gv("hisab-a","blue"))}
 function togTheme(){const T=["auto","light","dark"];localStorage.setItem("hisab-t",T[(T.indexOf(gv("hisab-t","auto"))+1)%3]);applyTheme();render()}
